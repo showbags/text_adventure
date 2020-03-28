@@ -12,12 +12,21 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
+
+    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
+
+println "Running gradle version: $gradle.gradleVersion"
 
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+}
+
+javafx {
+    version = "11.0.2"
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing', 'javafx.web' ]
 }
 
 dependencies {
@@ -47,10 +56,20 @@ idea{
 
 application {
     // Define the main class for the application.
-    mainClassName = 'text_adventure.GameExecutive'
+    //mainClassName = 'text_adventure.GameExecutive'
+    mainClassName = 'text_adventure.GameMaker'
 }
 
 test {
     // Use junit platform for unit tests
     useJUnitPlatform()
+}
+
+task(runSimple, dependsOn: 'classes', type: JavaExec) {
+    main = 'text_adventure.GameMaker'
+    classpath = sourceSets.main.runtimeClasspath
+    //modulepath = "build/install/text_adventure/lib/"
+
+    //args 'mrhaki'
+    //systemProperty 'simple.message', 'Hello '
 }

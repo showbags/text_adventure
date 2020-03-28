@@ -106,7 +106,10 @@ public class GameExecutive
     private void handleInput()
     {
         System.out.print("\n > ");
-        String input=System.console().readLine().toLowerCase();
+        Scanner in = new Scanner(System.in);
+        String input = in. nextLine();
+        //System.out.println("console: "+System.console());
+        //String input=System.console().readLine().toLowerCase();
         System.out.println();
         Matcher goMatcher=goPattern.matcher(input);
         if (goMatcher.matches())

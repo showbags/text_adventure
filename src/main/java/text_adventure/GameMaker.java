@@ -1,0 +1,27 @@
+package text_adventure;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+
+public class GameMaker extends Application {
+
+    public static void main(String[] args) {
+    // Here you can work with args - command line parameters
+        Application.launch(args);
+    }	
+
+    @Override
+    public void start(Stage stage) throws Exception {
+	FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/game_maker.fxml"));
+        Parent root = loader.load();
+        
+        stage.setTitle("GameMaker");
+        stage.setScene(new Scene(root));
+        stage.show();
+    }
+}
+
