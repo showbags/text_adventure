@@ -56,8 +56,8 @@ idea{
 
 application {
     // Define the main class for the application.
-    //mainClassName = 'text_adventure.GameExecutive'
-    mainClassName = 'text_adventure.GameMaker'
+    mainClassName = 'text_adventure.Game'
+    //mainClassName = 'text_adventure.GameMaker'
 }
 
 test {

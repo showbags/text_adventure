@@ -1,9 +1,7 @@
 package text_adventure;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 import java.util.regex.*;
 
@@ -11,34 +9,11 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
-public class GameExecutive
+public class Game
 {
-    public static void main(String[] args) throws Exception
-    {
-        writeJson();
-        GameExecutive ge=new GameExecutive();
-        Screen s1=new Screen(ge, "Home", "You are at your home. There is a circular dining table in the center of the room.");
-        s1.addItem("key", "On the table is a <>", "It's just a key");
-        s1.addAction("unlock door( with)*( the)*( key)*",
-                "if (!ge.inventory.containsKey(\"key\"))\n"+
-                        "System.out.println(\"You don't have a key\");\n"+
-                        "else\n"+
-                        "{\n"+
-                        "screen.getLink(\"south\").setCanPass(true);\n"+
-                        "System.out.println(\"The door unlocks\");\n"+
-                        "}\n"+
-                        "ge.hold();\n"
-        );
-        Screen s2=new Screen(ge, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
-        s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
-        Screen s3=new Screen(ge, "Living room", "You are in the living room of your house.");
-        new ScreenLink(s1, s2, "west", "east", "The back door leading to the <> is open to the outside", "The back door of the house is open to the <>");
-        new ScreenLink(s1, s3, "south", "north", "There is a door to the <>", "There is a door to the <>", false, "The door is locked");
-        ge.setCurrentScreen(s1);
-        ge.startGame();
-    }
+
+
 
     private static void writeJson() throws IOException
     {
@@ -76,15 +51,11 @@ public class GameExecutive
         }
     }
 
-    public static void parse(File file)
-    {
-
-    }
-
+    private Map<String,Screen> screens = new HashMap<>();
     private Screen currentScreen;
     private Map<String, Item> inventory=new HashMap<>();
 
-    private GameExecutive()
+    private Game()
     {
     }
 
@@ -98,10 +69,14 @@ public class GameExecutive
         } while (!currentScreen.isGameComplete());
     }
 
+    private void addScreen(Screen screen) { screens.put(screen.getTitle(),screen); }
+
     private void setCurrentScreen(Screen screen)
     {
         this.currentScreen=screen;
     }
+
+    public Screen getScreen(String name) { return screens.get(name); }
 
     private void handleInput()
     {
@@ -172,7 +147,7 @@ public class GameExecutive
             return null;
         }
 
-        return link.getScreen(currentScreen);
+        return getScreen(link.getScreen());
     }
 
     private Pattern goPattern=Pattern.compile("(go )*(north|south|east|west|[nsew])");
@@ -239,22 +214,81 @@ public class GameExecutive
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
+
+    public void link(String from, String to, String dir)
+    {
+        link(from,to,dir,"");
+    }
+
+    public void link(String from, String to, String dir, String desc)
+    {
+        link(from,to,dir,desc,true,"");
+    }
+
+    public void link(String from, String to, String dir, String desc, boolean can_pass, String cant_pass_message)
+    {
+        screens.get(from).link(to,dir,desc,can_pass,cant_pass_message);
+    }
+
+
+    public static void main(String[] args) throws Exception
+    {
+        writeJson();
+        Game game=new Game();
+
+        Screen s1=new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
+        s1.addItem("key", "On the table is a <>", "It's just a key");
+        s1.addAction("unlock door( with)*( the)*( key)*",
+                "if (!game.inventory.containsKey(\"key\"))\n"+
+                        "System.out.println(\"You don't have a key\");\n"+
+                        "else\n"+
+                        "{\n"+
+                        "screen.getLink(\"south\").setCanPass(true);\n"+
+                        "System.out.println(\"The door unlocks\");\n"+
+                        "}\n"+
+                        "game.hold();\n"
+        );
+        game.addScreen(s1);
+        Screen s2=new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
+        s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
+        game.addScreen(s2);
+        Screen s3=new Screen(game, "Living room", "You are in the living room of your house.");
+        game.addScreen(s3);
+        game.link("Home","Backyard","west","The back door leading to the <> is open to the outside");
+        game.link("Backyard","Home","east","The back door of the house is open to the <>");
+        game.link("Home","Living room","south", "There is a door to the <>", false, "The door is locked");
+        game.link("Living room","Home","north", "There is a door to the <>");
+        game.setCurrentScreen(s1);
+        game.startGame();
+    }
 }
 
 class Screen
 {
-    private GameExecutive ge;
+    private Game game;
     private String title, description;
     private Map<String, ScreenLink> links=new HashMap<>();
     private Map<String, Item> items=new HashMap<>();
     private Map<String, String> actions=new HashMap<>();
 
-    Screen(GameExecutive ge, String title, String description)
+    Screen(Game game, String title, String description)
     {
-        this.ge=ge;
+        this.game =game;
         this.title=title;
         this.description=description;
     }
+
+    public void link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
+    {
+        addLink(new ScreenLink(screen, dir, desc, can_pass, cant_pass_message));
+    }
+
+    void addLink(ScreenLink link)
+    {
+        links.put(link.getDirection(), link);
+    }
+
+    public String getTitle() { return this.title; }
 
     void addItem(String name, String insitu, String description)
     {
@@ -276,11 +310,6 @@ class Screen
         return items.remove(name);
     }
 
-    void addLink(ScreenLink link)
-    {
-        links.put(link.getDirection(this), link);
-    }
-
     ScreenLink getLink(String dir)
     {
         return links.get(dir);
@@ -297,7 +326,7 @@ class Screen
         System.out.print(description+" ");
         for (Item item : items.values()) System.out.print(item.describeInSitu()+". ");
         for (ScreenLink link : links.values())
-            System.out.print(link.describe(this)+". ");
+            System.out.print(link.describe()+". ");
         System.out.println();
     }
 
@@ -310,7 +339,7 @@ class Screen
             {
                 String groovy=entry.getValue();
                 Binding binding=new Binding();
-                binding.setVariable("ge", ge);
+                binding.setVariable("ge", game);
                 binding.setVariable("screen", this);
                 GroovyShell shell=new GroovyShell(binding);
                 shell.evaluate(groovy);
@@ -324,46 +353,39 @@ class Screen
     }
 }
 
-
 class ScreenLink
 {
-    private Screen screen1, screen2;
-    private String direction1, direction2;
-    private String description1, description2;
+    private String screen, direction, description, cant_pass_message;
     private boolean can_pass;
-    private String cant_pass_message;
 
-    ScreenLink(Screen screen1, Screen screen2, String direction1, String direction2, String description1, String description2)
+    public ScreenLink(String screen, String direction, String description)
     {
-        this(screen1,screen2,direction1,direction2,description1,description2,true,null);
+        this(screen,direction,description,true,null);
     }
 
-    ScreenLink(Screen screen1, Screen screen2, String direction1, String direction2, String description1, String description2, boolean can_pass, String cant_pass_message)
+    public ScreenLink(String screen, String direction, String description, boolean can_pass, String cant_pass_message)
     {
-        this.screen1=screen1;
-        this.screen2=screen2;
-        this.direction1=direction1;
-        this.direction2=direction2;
-        this.description1=description1;
-        this.description2=description2;
+        this.screen=screen;
+        this.direction=direction;
+        this.description=description;
         this.can_pass=can_pass;
         this.cant_pass_message=cant_pass_message;
-        screen1.addLink(this);
-        screen2.addLink(this);
     }
 
-    boolean canPass() { return can_pass; }
+    public String getScreen() { return this.screen; }
 
-    void setCanPass(boolean can_pass) { this.can_pass=can_pass; }
+    public boolean canPass() { return can_pass; }
 
-    String cantPassMessage() { return cant_pass_message; }
+    public void setCanPass(boolean can_pass) { this.can_pass=can_pass; }
 
-    String getDirection(Screen currentScreen) { return currentScreen==screen1 ? direction1 : direction2; }
+    public String cantPassMessage() { return cant_pass_message; }
 
-    Screen getScreen(Screen currentScreen) { return currentScreen==screen1 ? screen2 : screen1; }
+    public String getDirection() { return this.direction; }
 
-    String describe(Screen currentScreen)
-    { return currentScreen==screen1 ? description1.replaceAll("<>",direction1) : description2.replaceAll("<>",direction2); }
+    public String describe()
+    {
+        return description.replaceAll("<>",direction);
+    }
 }
 
 class Item
