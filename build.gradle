@@ -53,11 +53,9 @@ idea{
     }
 }
 
-
 application {
     // Define the main class for the application.
-    mainClassName = 'text_adventure.Game'
-    //mainClassName = 'text_adventure.GameMaker'
+    mainClassName = 'text_adventure.GameMaker'
 }
 
 test {
@@ -65,11 +63,8 @@ test {
     useJUnitPlatform()
 }
 
-task(runSimple, dependsOn: 'classes', type: JavaExec) {
-    main = 'text_adventure.GameMaker'
+task(runGame, dependsOn: 'classes', type: JavaExec) {
+    main = 'text_adventure.Game'
+    standardInput = System.in
     classpath = sourceSets.main.runtimeClasspath
-    //modulepath = "build/install/text_adventure/lib/"
-
-    //args 'mrhaki'
-    //systemProperty 'simple.message', 'Hello '
 }

@@ -1,7 +1,6 @@
 package text_adventure;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -9,54 +8,76 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Game
 {
-
-
-
-    private static void writeJson() throws IOException
-    {
-        //First Employee
-        JSONObject employeeDetails = new JSONObject();
-        employeeDetails.put("firstName", "Lokesh");
-        employeeDetails.put("lastName", "Gupta");
-        employeeDetails.put("website", "howtodoinjava.com");
-
-        JSONObject employeeObject = new JSONObject();
-        employeeObject.put("employee", employeeDetails);
-
-        //Second Employee
-        JSONObject employeeDetails2 = new JSONObject();
-        employeeDetails2.put("firstName", "Brian");
-        employeeDetails2.put("lastName", "Schultz");
-        employeeDetails2.put("website", "example.com");
-
-        JSONObject employeeObject2 = new JSONObject();
-        employeeObject2.put("employee", employeeDetails2);
-
-        //Add employees to list
-        JSONArray employeeList = new JSONArray();
-        employeeList.add(employeeObject);
-        employeeList.add(employeeObject2);
-
-        //Write JSON file
-        try (FileWriter file = new FileWriter("employees.json")) {
-
-            file.write(employeeList.toJSONString());
-            file.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private Map<String,Screen> screens = new HashMap<>();
     private Screen currentScreen;
     private Map<String, Item> inventory=new HashMap<>();
 
     private Game()
     {
+    }
+
+    public Game(File json) throws IOException, ParseException
+    {
+        //JSON parser object to parse read file
+        JSONParser jsonParser = new JSONParser();
+
+        FileReader reader = new FileReader(json);
+        //Read JSON file
+        Object obj = jsonParser.parse(reader);
+
+        JSONArray jscreens = (JSONArray) obj;
+
+
+        //Iterate over employee array
+        jscreens.forEach( emp -> {
+            addScreen( parseScreenObject( (JSONObject) emp ));
+        } );
+
+    }
+
+    private Screen parseScreenObject(JSONObject jscreen)
+    {
+        //Get employee first name
+        String title = (String)jscreen.get("title");
+        String description = (String)jscreen.get("description");
+        Screen screen = new Screen(this,title,description);
+        JSONArray items = (JSONArray)jscreen.get("items");
+        screen.display();
+        //TODO: parse items
+        //TODO: parse links
+        return screen;
+    }
+
+    public void write() throws IOException
+    {
+        //First Employee
+        JSONArray jscreens = new JSONArray();
+        for ( Screen screen : screens.values() )
+        {
+            JSONObject screenDetails=new JSONObject();
+            screenDetails.put("title", screen.getTitle());
+            screenDetails.put("description", screen.getDescription());
+            JSONArray jlinks = new JSONArray();
+            for ( ScreenLink link : screen.getLinks().values() )
+                jlinks.add(link.json());
+            screenDetails.put("links",jlinks);
+            JSONArray jitems = new JSONArray();
+            for ( Item item : screen.getItems().values() )
+                jlinks.add(item.json());
+            screenDetails.put("items",jitems);
+            screenDetails.toJSONString();
+            jscreens.add(screenDetails);
+        }
+
+        //Write JSON file
+        FileWriter file = new FileWriter("game.json");
+        file.write(jscreens.toJSONString());
+        file.flush();
     }
 
     private void startGame()
@@ -233,7 +254,6 @@ public class Game
 
     public static void main(String[] args) throws Exception
     {
-        writeJson();
         Game game=new Game();
 
         Screen s1=new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
@@ -259,6 +279,7 @@ public class Game
         game.link("Home","Living room","south", "There is a door to the <>", false, "The door is locked");
         game.link("Living room","Home","north", "There is a door to the <>");
         game.setCurrentScreen(s1);
+        game.write();
         game.startGame();
     }
 }
@@ -289,6 +310,14 @@ class Screen
     }
 
     public String getTitle() { return this.title; }
+
+    public String getDescription() { return this.description; }
+
+    public Map<String,ScreenLink> getLinks() { return this.links; }
+
+    public Map<String, Item> getItems() { return this.items; }
+
+    public Map<String, String> getActions() { return this.actions; }
 
     void addItem(String name, String insitu, String description)
     {
@@ -372,6 +401,17 @@ class ScreenLink
         this.cant_pass_message=cant_pass_message;
     }
 
+    public JSONObject json()
+    {
+        JSONObject json=new JSONObject();
+        json.put("screen", screen);
+        json.put("direction", direction);
+        json.put("description", description);
+        json.put("cant_pass_message", cant_pass_message);
+        json.put("can_pass",String.valueOf(can_pass));
+        return json;
+    }
+
     public String getScreen() { return this.screen; }
 
     public boolean canPass() { return can_pass; }
@@ -392,14 +432,23 @@ class Item
 {
     private String name, description, insitu;
 
-    Item(String name, String insitu, String description)
+    public Item(String name, String insitu, String description)
     {
         this.name=name;
         this.insitu=insitu;
         this.description=description;
     }
 
-    String describeInSitu(){
+    public JSONObject json()
+    {
+        JSONObject json=new JSONObject();
+        json.put("name", name);
+        json.put("description", description);
+        json.put("insitu", insitu);
+        return json;
+    }
+
+    public String describeInSitu(){
         return insitu.replaceAll("<>","\033[0;1m"+name+"\033[0m");
     }
 
@@ -407,5 +456,5 @@ class Item
         return this.name;
     }
 
-    String getDescription(){ return this.description; }
+    public String getDescription(){ return this.description; }
 }

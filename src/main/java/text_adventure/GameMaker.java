@@ -6,19 +6,23 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.File;
+
 
 public class GameMaker extends Application {
 
     public static void main(String[] args) {
-    // Here you can work with args - command line parameters
+        // Here you can work with args - command line parameters
         Application.launch(args);
     }	
 
     @Override
     public void start(Stage stage) throws Exception {
-	FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/game_maker.fxml"));
+        FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/game_maker.fxml"));
         Parent root = loader.load();
-        
+
+        Game game = new Game(new File("game.json"));
+
         stage.setTitle("GameMaker");
         stage.setScene(new Scene(root));
         stage.show();
