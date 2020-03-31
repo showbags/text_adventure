@@ -4,69 +4,37 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class Game
 {
     //game details
-    private Map<String,Screen> screens = new HashMap<>();
+    public Map<String,Screen> screens = new HashMap<>();
 
     //game state
-    private Screen currentScreen;
-    private Map<String, Item> inventory=new HashMap<>();
+    private transient Screen currentScreen;
+    private transient Map<String, Item> inventory=new HashMap<>();
 
     private Game()
     {
     }
 
-    public Game(File json) throws IOException, ParseException
+    public static Game load(File jsonFile) throws IOException
     {
-        //JSON parser object to parse read file
-        JSONParser jsonParser = new JSONParser();
-
-        FileReader reader = new FileReader(json);
-        //Read JSON file
-        Object obj = jsonParser.parse(reader);
-
-        JSONArray jscreens = (JSONArray) obj;
-
-
-        //Iterate over employee array
-        jscreens.forEach( emp -> {
-            addScreen( parseScreenObject( (JSONObject) emp ));
-        } );
-
+        Gson gson = new Gson();
+        FileReader reader = new FileReader(jsonFile);
+        return gson.fromJson(reader, Game.class);
     }
 
-    private Screen parseScreenObject(JSONObject jscreen)
+    public void write(File jsonFile) throws IOException
     {
-        //Get employee first name
-        String title = (String)jscreen.get("title");
-        String description = (String)jscreen.get("description");
-        Screen screen = new Screen(this,title,description);
-        JSONArray items = (JSONArray)jscreen.get("items");
-        screen.display();
-        //TODO: parse items
-        //TODO: parse links
-        return screen;
-    }
-
-    public void write() throws IOException
-    {
-        //First Employee
-        JSONArray jscreens = new JSONArray();
-        for ( Screen screen : screens.values() )
-            jscreens.add(screen.json());
-
-        //Write JSON file
-        FileWriter file = new FileWriter("game.json");
-        file.write(jscreens.toJSONString());
-        file.flush();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        FileWriter writer = new FileWriter(jsonFile);
+        writer.write(gson.toJson(this));
+        writer.close();
     }
 
     private void startGame()
@@ -202,7 +170,6 @@ public class Game
         hold();
     }
 
-
     private void error(String error)
     {
         System.out.print(error);
@@ -227,11 +194,6 @@ public class Game
         System.out.flush();
     }
 
-    public void link(String from, String to, String dir)
-    {
-        link(from,to,dir,"");
-    }
-
     public void link(String from, String to, String dir, String desc)
     {
         link(from,to,dir,desc,true,"");
@@ -248,6 +210,7 @@ public class Game
         Game game=new Game();
 
         Screen s1=new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
+        s1.setLocation(200,200);
         s1.addItem("key", "On the table is a <>", "It's just a key");
         s1.addAction("unlock door( with)*( the)*( key)*",
                 "if (!game.inventory.containsKey(\"key\"))\n"+
@@ -261,23 +224,25 @@ public class Game
         );
         game.addScreen(s1);
         Screen s2=new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
+        s2.setLocation(100,200);
         s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
         game.addScreen(s2);
         Screen s3=new Screen(game, "Living room", "You are in the living room of your house.");
+        s3.setLocation(200,300);
         game.addScreen(s3);
         game.link("Home","Backyard","west","The back door leading to the <> is open to the outside");
         game.link("Backyard","Home","east","The back door of the house is open to the <>");
         game.link("Home","Living room","south", "There is a door to the <>", false, "The door is locked");
         game.link("Living room","Home","north", "There is a door to the <>");
         game.setCurrentScreen(s1);
-        game.write();
+        game.write(new File("game.json"));
         game.startGame();
     }
 }
 
 class Screen
 {
-    private Game game;
+    private transient Game game;
     private String title, description;
     private Map<String, ScreenLink> links=new HashMap<>();
     private Map<String, Item> items=new HashMap<>();
@@ -296,29 +261,17 @@ class Screen
         this.description=description;
     }
 
-    public JSONObject json()
-    {
-        JSONObject screenDetails=new JSONObject();
-        screenDetails.put("title", getTitle());
-        screenDetails.put("description", getDescription());
-        screenDetails.put("x", String.valueOf(x));
-        screenDetails.put("y", String.valueOf(y));
-        JSONArray jlinks = new JSONArray();
-        screenDetails.put("links",jlinks);
-        for ( ScreenLink link : getLinks().values() )
-            jlinks.add(link.json());
-        JSONArray jitems = new JSONArray();
-        screenDetails.put("items",jitems);
-        for ( Item item : getItems().values() )
-            jitems.add(item.json());
-        return screenDetails;
-    }
-
     public double getX() { return this.x; }
     public double getY() { return this.y; }
 
     public void setX(double x) { this.x=x; }
     public void setY(double y) { this.y=y; }
+
+    public void setLocation(double x, double y)
+    {
+        setX(x);
+        setY(y);
+    }
 
     public void link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
     {
@@ -332,45 +285,37 @@ class Screen
 
     public String getTitle() { return this.title; }
 
-    public String getDescription() { return this.description; }
-
-    public Map<String,ScreenLink> getLinks() { return this.links; }
-
-    public Map<String, Item> getItems() { return this.items; }
-
-    public Map<String, String> getActions() { return this.actions; }
-
     void addItem(String name, String insitu, String description)
     {
         items.put(name, new Item(name, insitu, description));
     }
 
-    boolean hasItem(String name)
+    public boolean hasItem(String name)
     {
         return items.containsKey(name);
     }
 
-    Item getItem(String name)
+    public Item getItem(String name)
     {
         return items.get(name);
     }
 
-    Item removeItem(String name)
+    public Item removeItem(String name)
     {
         return items.remove(name);
     }
 
-    ScreenLink getLink(String dir)
+    public ScreenLink getLink(String dir)
     {
         return links.get(dir);
     }
 
-    void addAction(String regex, String action)
+    public void addAction(String regex, String action)
     {
         actions.put(regex, action);
     }
 
-    void display()
+    public void display()
     {
         System.out.println("\033[0;1m"+title+"\033[0m\n");
         System.out.print(description+" ");
@@ -380,7 +325,7 @@ class Screen
         System.out.println();
     }
 
-    void handleInput(String input)
+    public void handleInput(String input)
     {
         for (Map.Entry<String, String> entry : actions.entrySet())
         {
@@ -397,7 +342,7 @@ class Screen
         }
     }
 
-    boolean isGameComplete()
+    public boolean isGameComplete()
     {
         return false;
     }
@@ -408,11 +353,6 @@ class ScreenLink
     private String screen, direction, description, cant_pass_message;
     private boolean can_pass;
 
-    public ScreenLink(String screen, String direction, String description)
-    {
-        this(screen,direction,description,true,null);
-    }
-
     public ScreenLink(String screen, String direction, String description, boolean can_pass, String cant_pass_message)
     {
         this.screen=screen;
@@ -422,21 +362,11 @@ class ScreenLink
         this.cant_pass_message=cant_pass_message;
     }
 
-    public JSONObject json()
-    {
-        JSONObject json=new JSONObject();
-        json.put("screen", screen);
-        json.put("direction", direction);
-        json.put("description", description);
-        json.put("cant_pass_message", cant_pass_message);
-        json.put("can_pass",String.valueOf(can_pass));
-        return json;
-    }
-
     public String getScreen() { return this.screen; }
 
     public boolean canPass() { return can_pass; }
 
+    @SuppressWarnings("unused")
     public void setCanPass(boolean can_pass) { this.can_pass=can_pass; }
 
     public String cantPassMessage() { return cant_pass_message; }
@@ -458,15 +388,6 @@ class Item
         this.name=name;
         this.insitu=insitu;
         this.description=description;
-    }
-
-    public JSONObject json()
-    {
-        JSONObject json=new JSONObject();
-        json.put("name", name);
-        json.put("description", description);
-        json.put("insitu", insitu);
-        return json;
     }
 
     public String describeInSitu(){
