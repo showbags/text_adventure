@@ -22,6 +22,8 @@ public class GameMaker extends Application {
         Parent root = loader.load();
 
         Game game = new Game(new File("game.json"));
+        GameMakerController controller = loader.getController();
+        controller.setGame(game);
 
         stage.setTitle("GameMaker");
         stage.setScene(new Scene(root));

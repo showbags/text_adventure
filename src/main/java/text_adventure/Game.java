@@ -13,7 +13,10 @@ import org.json.simple.parser.ParseException;
 
 public class Game
 {
+    //game details
     private Map<String,Screen> screens = new HashMap<>();
+
+    //game state
     private Screen currentScreen;
     private Map<String, Item> inventory=new HashMap<>();
 
@@ -58,21 +61,7 @@ public class Game
         //First Employee
         JSONArray jscreens = new JSONArray();
         for ( Screen screen : screens.values() )
-        {
-            JSONObject screenDetails=new JSONObject();
-            screenDetails.put("title", screen.getTitle());
-            screenDetails.put("description", screen.getDescription());
-            JSONArray jlinks = new JSONArray();
-            for ( ScreenLink link : screen.getLinks().values() )
-                jlinks.add(link.json());
-            screenDetails.put("links",jlinks);
-            JSONArray jitems = new JSONArray();
-            for ( Item item : screen.getItems().values() )
-                jlinks.add(item.json());
-            screenDetails.put("items",jitems);
-            screenDetails.toJSONString();
-            jscreens.add(screenDetails);
-        }
+            jscreens.add(screen.json());
 
         //Write JSON file
         FileWriter file = new FileWriter("game.json");
@@ -96,6 +85,8 @@ public class Game
     {
         this.currentScreen=screen;
     }
+
+    public Map<String,Screen> getScreens() { return this.screens; }
 
     public Screen getScreen(String name) { return screens.get(name); }
 
@@ -291,13 +282,43 @@ class Screen
     private Map<String, ScreenLink> links=new HashMap<>();
     private Map<String, Item> items=new HashMap<>();
     private Map<String, String> actions=new HashMap<>();
+    private double x,y;
 
-    Screen(Game game, String title, String description)
+    public Screen(Game game)
+    {
+        this(game,"","");
+    }
+
+    public Screen(Game game, String title, String description)
     {
         this.game =game;
         this.title=title;
         this.description=description;
     }
+
+    public JSONObject json()
+    {
+        JSONObject screenDetails=new JSONObject();
+        screenDetails.put("title", getTitle());
+        screenDetails.put("description", getDescription());
+        screenDetails.put("x", String.valueOf(x));
+        screenDetails.put("y", String.valueOf(y));
+        JSONArray jlinks = new JSONArray();
+        screenDetails.put("links",jlinks);
+        for ( ScreenLink link : getLinks().values() )
+            jlinks.add(link.json());
+        JSONArray jitems = new JSONArray();
+        screenDetails.put("items",jitems);
+        for ( Item item : getItems().values() )
+            jitems.add(item.json());
+        return screenDetails;
+    }
+
+    public double getX() { return this.x; }
+    public double getY() { return this.y; }
+
+    public void setX(double x) { this.x=x; }
+    public void setY(double y) { this.y=y; }
 
     public void link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
     {
