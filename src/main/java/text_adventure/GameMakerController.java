@@ -7,6 +7,8 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -27,6 +29,12 @@ public class GameMakerController
     @FXML
     private AnchorPane pane;
 
+    @FXML
+    private TextField titleField;
+
+    @FXML
+    private TextArea descriptionArea;
+
     private Game game;
 
     // Add a public no-args constructor
@@ -38,10 +46,7 @@ public class GameMakerController
     {
         this.game=game;
         for (Screen screen : game.getScreens().values() )
-        {
-            Pane rect = new ScreenRect(screen);
-            pane.getChildren().add(rect);
-        }
+            addScreen(screen);
     }
 
     @Override
@@ -53,11 +58,20 @@ public class GameMakerController
                 System.out.println("Space pressed");
                 Screen screen = new Screen(game);
                 screen.setLocation(cursorRect.getLayoutX(), cursorRect.getLayoutY());
-                Pane rect = new ScreenRect(screen);
-                pane.getChildren().add(rect);
+                addScreen(screen);
                 keyEvent.consume();
             }
         });
+    }
+
+    private void addScreen(Screen screen)
+    {
+        ScreenRect rect = new ScreenRect(screen);
+        rect.selectedProperty().addListener( (obs,ov,nv) ->{
+            titleField.setText(screen.getTitle());
+            descriptionArea.setText(screen.getDescription());
+        });
+        pane.getChildren().add(rect);
     }
 
     @FXML
@@ -148,6 +162,8 @@ public class GameMakerController
         public boolean isSelected() { return selected.getValue(); }
 
         public void setSelected(boolean selected)  {  this.selected.setValue(selected); }
+
+        public BooleanProperty selectedProperty() { return this.selected; }
 
     }
 }

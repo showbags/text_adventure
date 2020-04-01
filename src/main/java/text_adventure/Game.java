@@ -285,6 +285,8 @@ class Screen
 
     public String getTitle() { return this.title; }
 
+    public String getDescription() { return this.description; }
+
     void addItem(String name, String insitu, String description)
     {
         items.put(name, new Item(name, insitu, description));

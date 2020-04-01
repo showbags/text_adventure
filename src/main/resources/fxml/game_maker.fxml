@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
 
-<VBox prefHeight="700.0" prefWidth="942.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="text_adventure.GameMakerController">
-  <children>
-    <MenuBar VBox.vgrow="NEVER">
+<BorderPane prefHeight="537.0" prefWidth="778.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="text_adventure.GameMakerController">
+   <top>
+    <MenuBar BorderPane.alignment="CENTER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
@@ -50,26 +60,60 @@
             <Insets bottom="100.0" left="100.0" right="100.0" top="100.0" />
          </opaqueInsets>
     </MenuBar>
-      <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS" pannable="true" vbarPolicy="ALWAYS">
-         <content>
-            <AnchorPane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#mouseClicked" onMouseEntered="#mouseEntered" prefHeight="800.0" prefWidth="1000.0" style="-fx-border-color: orange; -fx-border-width: 3;">
-               <padding>
-                  <Insets bottom="100.0" left="100.0" right="100.0" top="100.0" />
-               </padding>
+   </top>
+   <center>
+      <SplitPane dividerPositions="0.65" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <items>
+            <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS" pannable="true" vbarPolicy="ALWAYS">
+               <content>
+                  <AnchorPane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#mouseClicked" onMouseEntered="#mouseEntered" prefHeight="800.0" prefWidth="1000.0" style="-fx-border-color: orange; -fx-border-width: 3;">
+                     <padding>
+                        <Insets bottom="100.0" left="100.0" right="100.0" top="100.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets bottom="100.0" left="100.0" right="100.0" top="100.0" />
+                     </opaqueInsets>
+                     <children>
+                        <Rectangle fx:id="cursorRect" arcHeight="5.0" arcWidth="5.0" fill="TRANSPARENT" height="50.0" layoutX="200.0" layoutY="200.0" stroke="#3814e8" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeMiterLimit="20.0" strokeType="INSIDE" strokeWidth="3.0" translateX="-25.0" translateY="-25.0" width="50.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
                <opaqueInsets>
-                  <Insets bottom="100.0" left="100.0" right="100.0" top="100.0" />
+                  <Insets />
                </opaqueInsets>
-               <children>
-                  <Rectangle fx:id="cursorRect" arcHeight="5.0" arcWidth="5.0" fill="TRANSPARENT" height="50.0" layoutX="200.0" layoutY="200.0" stroke="#3814e8" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeMiterLimit="20.0" strokeType="INSIDE" strokeWidth="3.0" translateX="-25.0" translateY="-25.0" width="50.0" />
-               </children>
-            </AnchorPane>
-         </content>
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-         <cursor>
-            <Cursor fx:constant="DEFAULT" />
-         </cursor>
-      </ScrollPane>
-  </children>
-</VBox>
+               <cursor>
+                  <Cursor fx:constant="DEFAULT" />
+               </cursor>
+            </ScrollPane>
+            <ScrollPane hbarPolicy="NEVER">
+               <content>
+                  <VBox>
+                     <children>
+                        <Label text="Title">
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </Label>
+                        <TextField fx:id="titleField" maxWidth="200.0" prefColumnCount="40" promptText="add title here">
+                           <VBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </VBox.margin>
+                        </TextField>
+                        <Label text="Description">
+                           <VBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </VBox.margin>
+                        </Label>
+                        <TextArea fx:id="descriptionArea" maxWidth="250.0" promptText="add description here" wrapText="true">
+                           <VBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </VBox.margin>
+                        </TextArea>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+        </items>
+      </SplitPane>
+   </center>
+</BorderPane>
