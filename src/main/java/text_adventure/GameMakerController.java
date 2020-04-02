@@ -2,6 +2,8 @@ package text_adventure;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -68,8 +70,16 @@ public class GameMakerController
     {
         ScreenRect rect = new ScreenRect(screen);
         rect.selectedProperty().addListener( (obs,ov,nv) ->{
-            titleField.setText(screen.getTitle());
-            descriptionArea.setText(screen.getDescription());
+            if (nv)
+            {
+                titleField.setText(rect.titleProperty().getValue());
+                rect.titleProperty().bind(titleField.textProperty());
+                descriptionArea.setText(screen.getDescription());
+            }
+            else
+            {
+                rect.titleProperty().unbind();
+            }
         });
         pane.getChildren().add(rect);
     }
@@ -94,9 +104,7 @@ public class GameMakerController
         for (Node node : pane.getChildren())
         {
             if (node instanceof ScreenRect)
-            {
                 ((ScreenRect)node).setSelected(false);
-            }
         }
         rect.setSelected(true);
     }
@@ -105,6 +113,7 @@ public class GameMakerController
     {
         private Screen screen;
         private BooleanProperty selected = new SimpleBooleanProperty();
+        private StringProperty titleProperty, descriptionProperty;
 
         public ScreenRect(Screen screen)
         {
@@ -113,7 +122,10 @@ public class GameMakerController
             setMinHeight(cursorRect.getHeight());
             setMaxHeight(cursorRect.getHeight());
             this.screen=screen;
-            Label label = new Label(screen.getTitle());
+            titleProperty = new SimpleStringProperty(screen.getTitle());
+            descriptionProperty = new SimpleStringProperty(screen.getDescription());
+            Label label = new Label();
+            label.textProperty().bind(titleProperty);
             label.setFont(Font.font("Arial", 8));
             label.setAlignment(Pos.CENTER);
 
@@ -137,6 +149,8 @@ public class GameMakerController
             } );
             setStyle();
         }
+
+        public StringProperty titleProperty() { return titleProperty; }
 
         public String selectedBorder = "-fx-border-color: blue;";
         public String focusedBorder = "-fx-border-color: black;";
