@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -16,6 +17,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 
@@ -36,6 +38,9 @@ public class GameMakerController
 
     @FXML
     private TextArea descriptionArea;
+
+    @FXML
+    private VBox directionBox;
 
     private Game game;
 
@@ -75,17 +80,20 @@ public class GameMakerController
                 titleField.setText(rect.titleProperty().getValue());
                 rect.titleProperty().bind(titleField.textProperty());
                 descriptionArea.setText(screen.getDescription());
+                for (ScreenLink link : rect.getScreen().getLinks().values() )
+                    directionBox.getChildren().add(new DirectionForm(link));
             }
             else
             {
                 rect.titleProperty().unbind();
+                directionBox.getChildren().clear();
             }
         });
         pane.getChildren().add(rect);
     }
 
     @FXML
-    private void mouseEntered(MouseEvent event)
+    private void mouseEntered()
     {
         pane.requestFocus();
     }
@@ -97,6 +105,24 @@ public class GameMakerController
         cursorRect.setLayoutX(d*(Math.round(event.getX()/d)));
         cursorRect.setLayoutY(d*(Math.round(event.getY()/d)));
         pane.requestFocus();
+    }
+
+    @FXML
+    private void newDirection()
+    {
+        System.out.println("add direction");
+    }
+
+    @FXML
+    private void newItem()
+    {
+        System.out.println("add item");
+    }
+
+    @FXML
+    private void newAction()
+    {
+        System.out.println("add action");
     }
 
     public void selectOnly(ScreenRect rect)
@@ -113,17 +139,17 @@ public class GameMakerController
     {
         private Screen screen;
         private BooleanProperty selected = new SimpleBooleanProperty();
-        private StringProperty titleProperty, descriptionProperty;
+        private StringProperty titleProperty;
 
         public ScreenRect(Screen screen)
         {
+            this.screen=screen;
             setMinWidth(cursorRect.getWidth());
             setMaxWidth(cursorRect.getWidth());
             setMinHeight(cursorRect.getHeight());
             setMaxHeight(cursorRect.getHeight());
             this.screen=screen;
             titleProperty = new SimpleStringProperty(screen.getTitle());
-            descriptionProperty = new SimpleStringProperty(screen.getDescription());
             Label label = new Label();
             label.textProperty().bind(titleProperty);
             label.setFont(Font.font("Arial", 8));
@@ -149,6 +175,8 @@ public class GameMakerController
             } );
             setStyle();
         }
+
+        public Screen getScreen() { return this.screen; }
 
         public StringProperty titleProperty() { return titleProperty; }
 
@@ -179,6 +207,24 @@ public class GameMakerController
 
         public BooleanProperty selectedProperty() { return this.selected; }
 
+    }
+
+    class DirectionForm extends VBox
+    {
+        public DirectionForm(ScreenLink link)
+        {
+            getChildren().add(new Label("screen"));
+            getChildren().add(new TextField(link.getScreen()));
+            getChildren().add(new Label("direction"));
+            getChildren().add(new TextField(link.getDirection()));
+            getChildren().add(new Label("description"));
+            getChildren().add(new TextField(link.getDescription()));
+            CheckBox cb = new CheckBox("can_pass");
+            cb.setSelected(link.canPass());
+            getChildren().add(cb);
+            getChildren().add(new Label("cant_pass_message"));
+            getChildren().add(new TextField(link.cantPassMessage()));
+        }
     }
 }
 

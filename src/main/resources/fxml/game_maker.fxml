@@ -116,49 +116,49 @@
                            <VBox.margin>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </VBox.margin>
-                           <graphic>
-                              <VBox>
+                           <content>
+                              <VBox fx:id="directionBox">
                                  <children>
-                                    <Button fx:id="addDirection" mnemonicParsing="false" text="+">
+                                    <Button mnemonicParsing="false" onAction="#newDirection" text="+">
                                        <font>
                                           <Font size="8.0" />
                                        </font>
                                     </Button>
                                  </children>
                               </VBox>
-                           </graphic>
+                           </content>
                         </TitledPane>
                         <TitledPane animated="false" expanded="false" text="Items">
                            <VBox.margin>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </VBox.margin>
-                           <graphic>
+                           <content>
                               <VBox>
                                  <children>
-                                    <Button fx:id="addItem" mnemonicParsing="false" text="+">
+                                    <Button mnemonicParsing="false" onAction="#newItem" text="+">
                                        <font>
                                           <Font size="8.0" />
                                        </font>
                                     </Button>
                                  </children>
                               </VBox>
-                           </graphic>
+                           </content>
                         </TitledPane>
                         <TitledPane animated="false" expanded="false" text="Actions">
                            <VBox.margin>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </VBox.margin>
-                           <graphic>
+                           <content>
                               <VBox>
                                  <children>
-                                    <Button fx:id="addAction" mnemonicParsing="false" text="+">
+                                    <Button mnemonicParsing="false" onAction="#newAction" text="+">
                                        <font>
                                           <Font size="8.0" />
                                        </font>
                                     </Button>
                                  </children>
                               </VBox>
-                           </graphic>
+                           </content>
                         </TitledPane>
                      </children>
                   </VBox>

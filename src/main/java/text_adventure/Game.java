@@ -287,7 +287,7 @@ class Screen
 
     public String getDescription() { return this.description; }
 
-    void addItem(String name, String insitu, String description)
+    public void addItem(String name, String insitu, String description)
     {
         items.put(name, new Item(name, insitu, description));
     }
@@ -306,6 +306,8 @@ class Screen
     {
         return items.remove(name);
     }
+
+    public Map<String, ScreenLink> getLinks() { return links; }
 
     public ScreenLink getLink(String dir)
     {
@@ -374,6 +376,8 @@ class ScreenLink
     public String cantPassMessage() { return cant_pass_message; }
 
     public String getDirection() { return this.direction; }
+
+    public String getDescription() { return this.description; }
 
     public String describe()
     {
