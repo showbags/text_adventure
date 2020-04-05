@@ -14,14 +14,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class GameMakerController
@@ -54,6 +52,7 @@ public class GameMakerController
         this.game=game;
         for (Screen screen : game.getScreens().values() )
             addScreen(screen);
+
     }
 
     @Override
@@ -62,7 +61,6 @@ public class GameMakerController
         pane.requestFocus();
         pane.setOnKeyPressed(keyEvent->{
             if (keyEvent.getCode()==KeyCode.SPACE){
-                System.out.println("Space pressed");
                 Screen screen = new Screen(game);
                 screen.setLocation(cursorRect.getLayoutX(), cursorRect.getLayoutY());
                 addScreen(screen);
@@ -86,9 +84,11 @@ public class GameMakerController
             else
             {
                 rect.titleProperty().unbind();
-                directionBox.getChildren().clear();
+                List<Node> list = directionBox.getChildren();
+                list.subList(1, list.size()-1).clear();//leave item 0. It is the + button
             }
         });
+        selectOnly(rect);
         pane.getChildren().add(rect);
     }
 
@@ -213,17 +213,31 @@ public class GameMakerController
     {
         public DirectionForm(ScreenLink link)
         {
-            getChildren().add(new Label("screen"));
-            getChildren().add(new TextField(link.getScreen()));
-            getChildren().add(new Label("direction"));
-            getChildren().add(new TextField(link.getDirection()));
-            getChildren().add(new Label("description"));
-            getChildren().add(new TextField(link.getDescription()));
-            CheckBox cb = new CheckBox("can_pass");
+            Label toLabel = new Label("To");
+            toLabel.setMinWidth(100);
+            TextField toField = new TextField(link.getScreen());
+            HBox.setHgrow(toField, Priority.ALWAYS);
+            getChildren().add(new HBox(toLabel,toField));
+
+            Label dirLabel = new Label("Direction");
+            dirLabel.setMinWidth(100);
+            TextField dirField = new TextField(link.getDirection());
+            HBox.setHgrow(dirField, Priority.ALWAYS);
+            getChildren().add(new HBox(dirLabel, dirField));
+
+            Label descLabel = new Label("Description");
+            descLabel.setMinWidth(100);
+            TextField descField = new TextField(link.getDescription());
+            HBox.setHgrow(descField, Priority.ALWAYS);
+            getChildren().add(new HBox(descLabel, descField));
+
+            CheckBox cb = new CheckBox("Can pass");
             cb.setSelected(link.canPass());
-            getChildren().add(cb);
-            getChildren().add(new Label("cant_pass_message"));
-            getChildren().add(new TextField(link.cantPassMessage()));
+            cb.setMinWidth(100);
+            TextField tb = new TextField(link.cantPassMessage());
+            tb.disableProperty().bind(cb.selectedProperty());
+            HBox.setHgrow(tb, Priority.ALWAYS);
+            getChildren().add(new HBox(cb, tb));
         }
     }
 }
