@@ -26,7 +26,10 @@ public class Game
     {
         Gson gson = new Gson();
         FileReader reader = new FileReader(jsonFile);
-        return gson.fromJson(reader, Game.class);
+        Game game = gson.fromJson(reader, Game.class);
+        for (Screen screen : game.screens.values())
+            screen.setGame(game);
+        return game;
     }
 
     public void write(File jsonFile) throws IOException
@@ -261,6 +264,8 @@ class Screen
         this.description=description;
     }
 
+    public void setGame(Game game) { this.game=game; }
+
     public double getX() { return this.x; }
     public double getY() { return this.y; }
 
@@ -278,6 +283,11 @@ class Screen
         addLink(new ScreenLink(screen, dir, desc, can_pass, cant_pass_message));
     }
 
+    public Screen getScreen(ScreenLink link)
+    {
+        return game.getScreen(link.getScreen());
+    }
+
     void addLink(ScreenLink link)
     {
         links.put(link.getDirection(), link);
@@ -286,6 +296,8 @@ class Screen
     public String getTitle() { return this.title; }
 
     public String getDescription() { return this.description; }
+
+    public String toString() { return this.title; }
 
     public void addItem(String name, String insitu, String description)
     {
@@ -383,6 +395,8 @@ class ScreenLink
     {
         return description.replaceAll("<>",direction);
     }
+
+    public String toString() { return screen; }
 }
 
 class Item

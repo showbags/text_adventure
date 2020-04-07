@@ -15,6 +15,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 
@@ -52,7 +54,6 @@ public class GameMakerController
         this.game=game;
         for (Screen screen : game.getScreens().values() )
             addScreen(screen);
-
     }
 
     @Override
@@ -78,18 +79,21 @@ public class GameMakerController
                 titleField.setText(rect.titleProperty().getValue());
                 rect.titleProperty().bind(titleField.textProperty());
                 descriptionArea.setText(screen.getDescription());
+                int iter=0;
                 for (ScreenLink link : rect.getScreen().getLinks().values() )
-                    directionBox.getChildren().add(new DirectionForm(link));
+                    directionBox.getChildren().add(iter++,new DirectionForm(link));
             }
             else
             {
                 rect.titleProperty().unbind();
                 List<Node> list = directionBox.getChildren();
-                list.subList(1, list.size()-1).clear();//leave item 0. It is the + button
+                list.subList(0, list.size()-2).clear();//leave item 0. It is the + button
             }
         });
         selectOnly(rect);
         pane.getChildren().add(rect);
+        for (ScreenLink link : screen.getLinks().values())
+            pane.getChildren().add(new ScreenLinkLine(screen, link));
     }
 
     @FXML
@@ -209,7 +213,7 @@ public class GameMakerController
 
     }
 
-    class DirectionForm extends VBox
+    static class DirectionForm extends VBox
     {
         public DirectionForm(ScreenLink link)
         {
@@ -238,6 +242,35 @@ public class GameMakerController
             tb.disableProperty().bind(cb.selectedProperty());
             HBox.setHgrow(tb, Priority.ALWAYS);
             getChildren().add(new HBox(cb, tb));
+        }
+    }
+
+    static class ScreenLinkLine extends CubicCurve
+    {
+        public ScreenLinkLine(Screen from, ScreenLink link)
+        {
+            setStrokeWidth(2d);
+            double r = Math.random();
+            double g = Math.random();
+            double b = Math.random();
+            String dir = link.getDirection();
+            double pmx = dir.equals("west") ? -40 : dir.equals("east") ? 40 : 0;
+            double pmy = dir.equals("north") ? -40 : dir.equals("south") ? 40 : 0;
+            setStroke(Color.color(r, g, b));
+            setFill(null);
+            setStartX(from.getX()+pmx);
+            setStartY(from.getY()+pmy);
+            Screen to = from.getScreen(link);
+            double midx = (from.getX()+to.getX())/2;
+            double midy = (from.getY()+to.getY())/2;
+            setEndX(midx);
+            setEndY(midy);
+
+
+            setControlX1(getStartX());
+            setControlY1(getStartY());
+            setControlX2(getEndX());
+            setControlY2(getEndY());
         }
     }
 }
