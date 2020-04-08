@@ -21,6 +21,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -43,11 +44,10 @@ public class GameMakerController
     private VBox directionBox;
 
     private Game game;
+    private HashMap<Screen,ScreenRect> rects = new HashMap<>();
 
     // Add a public no-args constructor
-    public GameMakerController()
-    {
-    }
+    public GameMakerController() { }
 
     public void setGame(Game game)
     {
@@ -73,6 +73,8 @@ public class GameMakerController
     private void addScreen(Screen screen)
     {
         ScreenRect rect = new ScreenRect(screen);
+        rects.put(screen,rect);
+
         rect.selectedProperty().addListener( (obs,ov,nv) ->{
             if (nv)
             {
@@ -93,7 +95,7 @@ public class GameMakerController
         selectOnly(rect);
         pane.getChildren().add(rect);
         for (ScreenLink link : screen.getLinks().values())
-            pane.getChildren().add(new ScreenLinkLine(screen, link));
+            pane.getChildren().add(new ScreenLinkLine(rect, link));
     }
 
     @FXML
@@ -177,6 +179,8 @@ public class GameMakerController
                 selectOnly(this);
                 e.consume();
             } );
+
+            enableDrag(this);
             setStyle();
         }
 
@@ -210,9 +214,27 @@ public class GameMakerController
         public void setSelected(boolean selected)  {  this.selected.setValue(selected); }
 
         public BooleanProperty selectedProperty() { return this.selected; }
-
     }
 
+    static class Orig { double x, y; }
+
+    // make a node movable by dragging it around with the mouse.
+    private void enableDrag(final ScreenRect rect) {
+        final Orig orig= new Orig();
+        rect.setOnMousePressed(e->{
+            orig.x = e.getX();
+            orig.y = e.getY();
+            e.consume();
+        });
+        rect.setOnMouseDragged(e->{
+            double delx = orig.x-e.getX();
+            double dely = orig.y-e.getY();
+            rect.setLayoutX( rect.getLayoutX()-delx );
+            rect.setLayoutY( rect.getLayoutY()-dely );
+            e.consume();
+        });
+    }
+    
     static class DirectionForm extends VBox
     {
         public DirectionForm(ScreenLink link)
@@ -245,9 +267,9 @@ public class GameMakerController
         }
     }
 
-    static class ScreenLinkLine extends CubicCurve
+    class ScreenLinkLine extends CubicCurve
     {
-        public ScreenLinkLine(Screen from, ScreenLink link)
+        public ScreenLinkLine(ScreenRect from, ScreenLink link)
         {
             setStrokeWidth(2d);
             double r = Math.random();
@@ -258,19 +280,21 @@ public class GameMakerController
             double pmy = dir.equals("north") ? -40 : dir.equals("south") ? 40 : 0;
             setStroke(Color.color(r, g, b));
             setFill(null);
-            setStartX(from.getX()+pmx);
-            setStartY(from.getY()+pmy);
-            Screen to = from.getScreen(link);
-            double midx = (from.getX()+to.getX())/2;
-            double midy = (from.getY()+to.getY())/2;
-            setEndX(midx);
-            setEndY(midy);
+            startXProperty().bind(from.layoutXProperty().add(pmx));
+            startYProperty().bind(from.layoutYProperty().add(pmy));
 
-
-            setControlX1(getStartX());
-            setControlY1(getStartY());
-            setControlX2(getEndX());
-            setControlY2(getEndY());
+            Screen to = from.getScreen().getScreen(link);
+            ScreenRect toRect=GameMakerController.this.rects.get(to);
+            //TODO: listen to additions of screens to update this line where necessary
+            if (toRect!=null)
+            {
+                endXProperty().bind(from.layoutXProperty().add(toRect.layoutXProperty().multiply(0.5)));
+                endYProperty().bind(from.layoutYProperty().add(toRect.layoutYProperty().multiply(0.5)));
+                controlX1Property().bind(startXProperty());
+                controlY1Property().bind(startYProperty());
+                controlX2Property().bind(endXProperty());
+                controlY2Property().bind(endYProperty());
+            }
         }
     }
 }
