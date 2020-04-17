@@ -1,9 +1,6 @@
 package text_adventure;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -54,6 +51,13 @@ public class GameMakerController
         this.game=game;
         for (Screen screen : game.getScreens().values() )
             addScreen(screen);
+        for (Node node : pane.getChildren())
+        {
+            if (node instanceof ScreenLinkLine)
+            {
+                ((ScreenLinkLine)node).setTo();
+            }
+        }
     }
 
     @Override
@@ -141,7 +145,7 @@ public class GameMakerController
         rect.setSelected(true);
     }
 
-    class ScreenRect extends Pane
+    class ScreenRect extends StackPane
     {
         private Screen screen;
         private BooleanProperty selected = new SimpleBooleanProperty();
@@ -161,10 +165,7 @@ public class GameMakerController
             label.setFont(Font.font("Arial", 8));
             label.setAlignment(Pos.CENTER);
 
-            HBox hbox = new HBox(label);
-            hbox.setAlignment(Pos.CENTER);
-            hbox.setPrefSize(cursorRect.getWidth(),cursorRect.getHeight());
-            getChildren().add(hbox);
+            getChildren().add(label);
             setTranslateX(cursorRect.getTranslateX());
             setTranslateY(cursorRect.getTranslateY());
             setLayoutX(screen.getX());
@@ -229,8 +230,7 @@ public class GameMakerController
         rect.setOnMouseDragged(e->{
             double delx = orig.x-e.getX();
             double dely = orig.y-e.getY();
-            rect.setLayoutX( rect.getLayoutX()-delx );
-            rect.setLayoutY( rect.getLayoutY()-dely );
+            rect.relocate( rect.getLayoutX()-delx, rect.getLayoutY()-dely );
             e.consume();
         });
     }
@@ -269,8 +269,13 @@ public class GameMakerController
 
     class ScreenLinkLine extends CubicCurve
     {
+        private ScreenRect from;
+        private ScreenLink link;
+
         public ScreenLinkLine(ScreenRect from, ScreenLink link)
         {
+            this.from=from;
+            this.link=link;
             setStrokeWidth(2d);
             double r = Math.random();
             double g = Math.random();
@@ -282,20 +287,26 @@ public class GameMakerController
             setFill(null);
             startXProperty().bind(from.layoutXProperty().add(pmx));
             startYProperty().bind(from.layoutYProperty().add(pmy));
+            setTo();
+        }
 
+        public void setTo()
+        {
             Screen to = from.getScreen().getScreen(link);
             ScreenRect toRect=GameMakerController.this.rects.get(to);
+
             //TODO: listen to additions of screens to update this line where necessary
             if (toRect!=null)
             {
-                endXProperty().bind(from.layoutXProperty().add(toRect.layoutXProperty().multiply(0.5)));
-                endYProperty().bind(from.layoutYProperty().add(toRect.layoutYProperty().multiply(0.5)));
+                endXProperty().bind(from.layoutXProperty().add(toRect.layoutXProperty()).multiply(0.5));
+                endYProperty().bind(from.layoutYProperty().add(toRect.layoutYProperty()).multiply(0.5));
                 controlX1Property().bind(startXProperty());
                 controlY1Property().bind(startYProperty());
                 controlX2Property().bind(endXProperty());
                 controlY2Property().bind(endYProperty());
             }
         }
+
     }
 }
 
