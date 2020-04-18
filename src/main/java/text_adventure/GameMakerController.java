@@ -84,7 +84,8 @@ public class GameMakerController
             {
                 titleField.setText(rect.titleProperty().getValue());
                 rect.titleProperty().bind(titleField.textProperty());
-                descriptionArea.setText(screen.getDescription());
+                descriptionArea.setText(rect.descriptionProperty().getValue());
+                rect.descriptionProperty().bind(descriptionArea.textProperty());
                 int iter=0;
                 for (ScreenLink link : rect.getScreen().getLinks().values() )
                     directionBox.getChildren().add(iter++,new DirectionForm(link));
@@ -92,8 +93,9 @@ public class GameMakerController
             else
             {
                 rect.titleProperty().unbind();
+                rect.descriptionProperty().unbind();
                 List<Node> list = directionBox.getChildren();
-                list.subList(0, list.size()-2).clear();//leave item 0. It is the + button
+                list.subList(0, list.size()-1).clear();//leave item 0. It is the + button
             }
         });
         selectOnly(rect);
@@ -149,7 +151,7 @@ public class GameMakerController
     {
         private Screen screen;
         private BooleanProperty selected = new SimpleBooleanProperty();
-        private StringProperty titleProperty;
+        private StringProperty titleProperty, descriptionProperty;
 
         public ScreenRect(Screen screen)
         {
@@ -160,6 +162,7 @@ public class GameMakerController
             setMaxHeight(cursorRect.getHeight());
             this.screen=screen;
             titleProperty = new SimpleStringProperty(screen.getTitle());
+            descriptionProperty = new SimpleStringProperty(screen.getDescription());
             Label label = new Label();
             label.textProperty().bind(titleProperty);
             label.setFont(Font.font("Arial", 8));
@@ -188,6 +191,8 @@ public class GameMakerController
         public Screen getScreen() { return this.screen; }
 
         public StringProperty titleProperty() { return titleProperty; }
+
+        public StringProperty descriptionProperty() { return descriptionProperty; }
 
         public String selectedBorder = "-fx-border-color: blue;";
         public String focusedBorder = "-fx-border-color: black;";
