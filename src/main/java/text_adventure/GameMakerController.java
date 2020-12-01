@@ -1,9 +1,6 @@
 package text_adventure;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -14,14 +11,15 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class GameMakerController
@@ -43,17 +41,23 @@ public class GameMakerController
     private VBox directionBox;
 
     private Game game;
+    private HashMap<Screen,ScreenRect> rects = new HashMap<>();
 
     // Add a public no-args constructor
-    public GameMakerController()
-    {
-    }
+    public GameMakerController() { }
 
     public void setGame(Game game)
     {
         this.game=game;
         for (Screen screen : game.getScreens().values() )
             addScreen(screen);
+        for (Node node : pane.getChildren())
+        {
+            if (node instanceof ScreenLinkLine)
+            {
+                ((ScreenLinkLine)node).setTo();
+            }
+        }
     }
 
     @Override
@@ -62,7 +66,6 @@ public class GameMakerController
         pane.requestFocus();
         pane.setOnKeyPressed(keyEvent->{
             if (keyEvent.getCode()==KeyCode.SPACE){
-                System.out.println("Space pressed");
                 Screen screen = new Screen(game);
                 screen.setLocation(cursorRect.getLayoutX(), cursorRect.getLayoutY());
                 addScreen(screen);
@@ -74,22 +77,31 @@ public class GameMakerController
     private void addScreen(Screen screen)
     {
         ScreenRect rect = new ScreenRect(screen);
+        rects.put(screen,rect);
+
         rect.selectedProperty().addListener( (obs,ov,nv) ->{
             if (nv)
             {
                 titleField.setText(rect.titleProperty().getValue());
                 rect.titleProperty().bind(titleField.textProperty());
-                descriptionArea.setText(screen.getDescription());
+                descriptionArea.setText(rect.descriptionProperty().getValue());
+                rect.descriptionProperty().bind(descriptionArea.textProperty());
+                int iter=0;
                 for (ScreenLink link : rect.getScreen().getLinks().values() )
-                    directionBox.getChildren().add(new DirectionForm(link));
+                    directionBox.getChildren().add(iter++,new DirectionForm(link));
             }
             else
             {
                 rect.titleProperty().unbind();
-                directionBox.getChildren().clear();
+                rect.descriptionProperty().unbind();
+                List<Node> list = directionBox.getChildren();
+                list.subList(0, list.size()-1).clear();//leave item 0. It is the + button
             }
         });
+        selectOnly(rect);
         pane.getChildren().add(rect);
+        for (ScreenLink link : screen.getLinks().values())
+            pane.getChildren().add(new ScreenLinkLine(rect, link));
     }
 
     @FXML
@@ -135,11 +147,11 @@ public class GameMakerController
         rect.setSelected(true);
     }
 
-    class ScreenRect extends Pane
+    class ScreenRect extends StackPane
     {
         private Screen screen;
         private BooleanProperty selected = new SimpleBooleanProperty();
-        private StringProperty titleProperty;
+        private StringProperty titleProperty, descriptionProperty;
 
         public ScreenRect(Screen screen)
         {
@@ -150,15 +162,13 @@ public class GameMakerController
             setMaxHeight(cursorRect.getHeight());
             this.screen=screen;
             titleProperty = new SimpleStringProperty(screen.getTitle());
+            descriptionProperty = new SimpleStringProperty(screen.getDescription());
             Label label = new Label();
             label.textProperty().bind(titleProperty);
             label.setFont(Font.font("Arial", 8));
             label.setAlignment(Pos.CENTER);
 
-            HBox hbox = new HBox(label);
-            hbox.setAlignment(Pos.CENTER);
-            hbox.setPrefSize(cursorRect.getWidth(),cursorRect.getHeight());
-            getChildren().add(hbox);
+            getChildren().add(label);
             setTranslateX(cursorRect.getTranslateX());
             setTranslateY(cursorRect.getTranslateY());
             setLayoutX(screen.getX());
@@ -173,12 +183,16 @@ public class GameMakerController
                 selectOnly(this);
                 e.consume();
             } );
+
+            enableDrag(this);
             setStyle();
         }
 
         public Screen getScreen() { return this.screen; }
 
         public StringProperty titleProperty() { return titleProperty; }
+
+        public StringProperty descriptionProperty() { return descriptionProperty; }
 
         public String selectedBorder = "-fx-border-color: blue;";
         public String focusedBorder = "-fx-border-color: black;";
@@ -206,25 +220,98 @@ public class GameMakerController
         public void setSelected(boolean selected)  {  this.selected.setValue(selected); }
 
         public BooleanProperty selectedProperty() { return this.selected; }
-
     }
 
-    class DirectionForm extends VBox
+    static class Orig { double x, y; }
+
+    // make a node movable by dragging it around with the mouse.
+    private void enableDrag(final ScreenRect rect) {
+        final Orig orig= new Orig();
+        rect.setOnMousePressed(e->{
+            orig.x = e.getX();
+            orig.y = e.getY();
+            e.consume();
+        });
+        rect.setOnMouseDragged(e->{
+            double delx = orig.x-e.getX();
+            double dely = orig.y-e.getY();
+            rect.relocate( rect.getLayoutX()-delx, rect.getLayoutY()-dely );
+            e.consume();
+        });
+    }
+    
+    static class DirectionForm extends VBox
     {
         public DirectionForm(ScreenLink link)
         {
-            getChildren().add(new Label("screen"));
-            getChildren().add(new TextField(link.getScreen()));
-            getChildren().add(new Label("direction"));
-            getChildren().add(new TextField(link.getDirection()));
-            getChildren().add(new Label("description"));
-            getChildren().add(new TextField(link.getDescription()));
-            CheckBox cb = new CheckBox("can_pass");
+            Label toLabel = new Label("To");
+            toLabel.setMinWidth(100);
+            TextField toField = new TextField(link.getScreen());
+            HBox.setHgrow(toField, Priority.ALWAYS);
+            getChildren().add(new HBox(toLabel,toField));
+
+            Label dirLabel = new Label("Direction");
+            dirLabel.setMinWidth(100);
+            TextField dirField = new TextField(link.getDirection());
+            HBox.setHgrow(dirField, Priority.ALWAYS);
+            getChildren().add(new HBox(dirLabel, dirField));
+
+            Label descLabel = new Label("Description");
+            descLabel.setMinWidth(100);
+            TextField descField = new TextField(link.getDescription());
+            HBox.setHgrow(descField, Priority.ALWAYS);
+            getChildren().add(new HBox(descLabel, descField));
+
+            CheckBox cb = new CheckBox("Can pass");
             cb.setSelected(link.canPass());
-            getChildren().add(cb);
-            getChildren().add(new Label("cant_pass_message"));
-            getChildren().add(new TextField(link.cantPassMessage()));
+            cb.setMinWidth(100);
+            TextField tb = new TextField(link.cantPassMessage());
+            tb.disableProperty().bind(cb.selectedProperty());
+            HBox.setHgrow(tb, Priority.ALWAYS);
+            getChildren().add(new HBox(cb, tb));
         }
+    }
+
+    class ScreenLinkLine extends CubicCurve
+    {
+        private ScreenRect from;
+        private ScreenLink link;
+
+        public ScreenLinkLine(ScreenRect from, ScreenLink link)
+        {
+            this.from=from;
+            this.link=link;
+            setStrokeWidth(2d);
+            double r = Math.random();
+            double g = Math.random();
+            double b = Math.random();
+            String dir = link.getDirection();
+            double pmx = dir.equals("west") ? -40 : dir.equals("east") ? 40 : 0;
+            double pmy = dir.equals("north") ? -40 : dir.equals("south") ? 40 : 0;
+            setStroke(Color.color(r, g, b));
+            setFill(null);
+            startXProperty().bind(from.layoutXProperty().add(pmx));
+            startYProperty().bind(from.layoutYProperty().add(pmy));
+            setTo();
+        }
+
+        public void setTo()
+        {
+            Screen to = from.getScreen().getScreen(link);
+            ScreenRect toRect=GameMakerController.this.rects.get(to);
+
+            //TODO: listen to additions of screens to update this line where necessary
+            if (toRect!=null)
+            {
+                endXProperty().bind(from.layoutXProperty().add(toRect.layoutXProperty()).multiply(0.5));
+                endYProperty().bind(from.layoutYProperty().add(toRect.layoutYProperty()).multiply(0.5));
+                controlX1Property().bind(startXProperty());
+                controlY1Property().bind(startYProperty());
+                controlX2Property().bind(endXProperty());
+                controlY2Property().bind(endYProperty());
+            }
+        }
+
     }
 }
 
