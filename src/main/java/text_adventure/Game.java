@@ -271,6 +271,8 @@ class Screen
         this.description=description;
     }
 
+    public Game getGame() { return this.game; }
+
     public void register(Game game) { this.game=game; }
 
     public double getX() { return this.x; }

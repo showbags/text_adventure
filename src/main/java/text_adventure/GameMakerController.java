@@ -297,7 +297,7 @@ public class GameMakerController
 
         public void setTo()
         {
-            Screen to = from.getScreen().getScreen(link);
+            Screen to = from.getScreen().getGame().getScreen(link.getScreen());
             ScreenRect toRect=GameMakerController.this.rects.get(to);
 
             //TODO: listen to additions of screens to update this line where necessary
