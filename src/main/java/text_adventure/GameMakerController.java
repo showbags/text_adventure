@@ -40,6 +40,12 @@ public class GameMakerController
     @FXML
     private VBox directionBox;
 
+    @FXML
+    private VBox itemsBox;
+
+    @FXML
+    private VBox actionsBox;
+
     private Game game;
     private HashMap<Screen,ScreenRect> rects = new HashMap<>();
 
@@ -86,9 +92,13 @@ public class GameMakerController
                 rect.titleProperty().bind(titleField.textProperty());
                 descriptionArea.setText(rect.descriptionProperty().getValue());
                 rect.descriptionProperty().bind(descriptionArea.textProperty());
-                int iter=0;
+                directionBox.getChildren().clear();
                 for (ScreenLink link : rect.getScreen().getLinks().values() )
-                    directionBox.getChildren().add(iter++,new DirectionForm(link));
+                    directionBox.getChildren().add(new DirectionForm(link));
+                itemsBox.getChildren().clear();
+                for (Item item : rect.getScreen().getItems().values())
+                    itemsBox.getChildren().add(new ItemForm(item));
+                actionsBox.getChildren().clear();
             }
             else
             {
@@ -244,23 +254,9 @@ public class GameMakerController
     {
         public DirectionForm(ScreenLink link)
         {
-            Label toLabel = new Label("To");
-            toLabel.setMinWidth(100);
-            TextField toField = new TextField(link.getScreen());
-            HBox.setHgrow(toField, Priority.ALWAYS);
-            getChildren().add(new HBox(toLabel,toField));
-
-            Label dirLabel = new Label("Direction");
-            dirLabel.setMinWidth(100);
-            TextField dirField = new TextField(link.getDirection());
-            HBox.setHgrow(dirField, Priority.ALWAYS);
-            getChildren().add(new HBox(dirLabel, dirField));
-
-            Label descLabel = new Label("Description");
-            descLabel.setMinWidth(100);
-            TextField descField = new TextField(link.getDescription());
-            HBox.setHgrow(descField, Priority.ALWAYS);
-            getChildren().add(new HBox(descLabel, descField));
+            getChildren().add(makeTextField("To",link.getScreen()));
+            getChildren().add(makeTextField("Direction",link.getDirection()));
+            getChildren().add(makeTextField("Description",link.getDescription()));
 
             CheckBox cb = new CheckBox("Can pass");
             cb.setSelected(link.canPass());
@@ -270,6 +266,25 @@ public class GameMakerController
             HBox.setHgrow(tb, Priority.ALWAYS);
             getChildren().add(new HBox(cb, tb));
         }
+    }
+
+    static class ItemForm extends VBox
+    {
+        public ItemForm(Item item)
+        {
+            getChildren().add(makeTextField("Name",item.getName()));
+            getChildren().add(makeTextField("Description",item.getDescription()));
+            getChildren().add(makeTextField("In situ",item.getInsitu()));
+        }
+    }
+
+    static HBox makeTextField(String name, String text)
+    {
+        Label label = new Label(name);
+        label.setMinWidth(100);
+        TextField descField = new TextField(text);
+        HBox.setHgrow(descField, Priority.ALWAYS);
+        return new HBox(label, descField);
     }
 
     class ScreenLinkLine extends CubicCurve
@@ -297,7 +312,7 @@ public class GameMakerController
 
         public void setTo()
         {
-            Screen to = from.getScreen().getScreen(link);
+            Screen to = from.getScreen().getGame().getScreen(link.getScreen());
             ScreenRect toRect=GameMakerController.this.rects.get(to);
 
             //TODO: listen to additions of screens to update this line where necessary

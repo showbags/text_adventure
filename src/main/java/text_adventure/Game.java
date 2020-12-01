@@ -271,6 +271,8 @@ class Screen
         this.description=description;
     }
 
+    public Game getGame() { return this.game; }
+
     public void register(Game game) { this.game=game; }
 
     public double getX() { return this.x; }
@@ -290,7 +292,7 @@ class Screen
         addLink(new ScreenLink(screen, dir, desc, can_pass, cant_pass_message));
     }
 
-    void addLink(ScreenLink link)
+    public void addLink(ScreenLink link)
     {
         links.put(link.getDirection(), link);
     }
@@ -325,6 +327,8 @@ class Screen
     {
         return links.get(dir);
     }
+
+    public Map<String, Item> getItems() { return this.items; }
 
     public void addAction(String regex, String action)
     {
@@ -407,6 +411,10 @@ class Item
         this.insitu=insitu;
         this.description=description;
     }
+
+    public String getName() { return this.name; }
+
+    public String getInsitu() { return this.insitu;}
 
     public String describeInSitu(){
         return insitu.replaceAll("<>","\033[0;1m"+name+"\033[0m");
