@@ -198,7 +198,7 @@ public class GameMakerController
 
         public String background()
         {
-            return "-fx-background-color: rgba(220,220,220,0.5);";
+            return "-fx-background-color: rgba(200,200,200,0.5);";
         }
 
         public boolean isSelected() { return selected.getValue(); }

@@ -56,7 +56,8 @@ idea{
 
 application {
     // Define the main class for the application.
-    mainClassName = 'text_adventure.GameMaker'
+    //mainClassName = 'text_adventure.GameMaker'
+    mainClassName = 'text_adventure.Game'
 }
 
 test {
@@ -69,3 +70,10 @@ task(runGame, dependsOn: 'classes', type: JavaExec) {
     standardInput = System.in
     classpath = sourceSets.main.runtimeClasspath
 }
+
+/*task createStartScripts(type: CreateStartScripts) {
+    outputDir = file('build/install/text_adventure/bin')
+    mainClass = 'text_adventure.Game'
+    applicationName = 'game'
+    classpath = files('')
+}*/

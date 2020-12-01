@@ -26,7 +26,11 @@ public class Game
     {
         Gson gson = new Gson();
         FileReader reader = new FileReader(jsonFile);
-        return gson.fromJson(reader, Game.class);
+        Game game = gson.fromJson(reader, Game.class);
+        game.setCurrentScreen(game.getScreen("Home"));
+        for (Screen screen : game.screens.values())
+            screen.register(game);
+        return game;
     }
 
     public void write(File jsonFile) throws IOException
@@ -104,7 +108,7 @@ public class Game
 
     private Screen handleMove(Matcher goMatcher)
     {
-        String dir=goMatcher.group(2);
+        String dir=goMatcher.group(1);
         if (dir.equals("n"))
             dir="north";
         else if (dir.equals("s"))
@@ -130,13 +134,13 @@ public class Game
         return getScreen(link.getScreen());
     }
 
-    private Pattern goPattern=Pattern.compile("(go )*(north|south|east|west|[nsew])");
-    private Pattern getPattern=Pattern.compile("(get|pick up|take) (.+)");
-    private Pattern lookPattern=Pattern.compile("(look at|look|examine) (.+)");
+    private Pattern goPattern=Pattern.compile("(?:go )*(north|south|east|west|[nsew])");
+    private Pattern getPattern=Pattern.compile("(?:get|pick up|take) (.+)");
+    private Pattern lookPattern=Pattern.compile("(?:look at|look|examine) (.+)");
 
     private void handleGet(Matcher getMatcher)
     {
-        String item=getMatcher.group(2);
+        String item=getMatcher.group(1);
         if (currentScreen.hasItem(item))
         {
             inventory.put(item, currentScreen.removeItem(item));
@@ -147,7 +151,7 @@ public class Game
 
     private void handleLook(Matcher lookMatcher)
     {
-        String item=lookMatcher.group(2);
+        String item=lookMatcher.group(1);
         if (currentScreen.hasItem(item))
         {
             System.out.println("\n"+currentScreen.getItem(item).getDescription());
@@ -208,34 +212,40 @@ public class Game
     public static void main(String[] args) throws Exception
     {
         Game game=new Game();
-
-        Screen s1=new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
-        s1.setLocation(200,200);
-        s1.addItem("key", "On the table is a <>", "It's just a key");
-        s1.addAction("unlock door( with)*( the)*( key)*",
-                "if (!game.inventory.containsKey(\"key\"))\n"+
-                        "System.out.println(\"You don't have a key\");\n"+
-                        "else\n"+
-                        "{\n"+
-                        "screen.getLink(\"south\").setCanPass(true);\n"+
-                        "System.out.println(\"The door unlocks\");\n"+
-                        "}\n"+
-                        "game.hold();\n"
-        );
-        game.addScreen(s1);
-        Screen s2=new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
-        s2.setLocation(100,200);
-        s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
-        game.addScreen(s2);
-        Screen s3=new Screen(game, "Living room", "You are in the living room of your house.");
-        s3.setLocation(200,300);
-        game.addScreen(s3);
-        game.link("Home","Backyard","west","The back door leading to the <> is open to the outside");
-        game.link("Backyard","Home","east","The back door of the house is open to the <>");
-        game.link("Home","Living room","south", "There is a door to the <>", false, "The door is locked");
-        game.link("Living room","Home","north", "There is a door to the <>");
-        game.setCurrentScreen(s1);
-        game.write(new File("game.json"));
+        if (false)
+        {
+            Screen s1 = new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
+            s1.setLocation(200, 200);
+            s1.addItem("key", "On the table is a <>", "It's just a key");
+            s1.addAction("unlock door( with)*( the)*( key)*",
+                    "if (!game.inventory.containsKey(\"key\"))\n"+
+                            "System.out.println(\"You don't have a key\");\n"+
+                            "else\n"+
+                            "{\n"+
+                            "screen.getLink(\"south\").setCanPass(true);\n"+
+                            "System.out.println(\"The door unlocks\");\n"+
+                            "}\n"+
+                            "game.hold();\n"
+            );
+            game.addScreen(s1);
+            Screen s2 = new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
+            s2.setLocation(100, 200);
+            s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
+            game.addScreen(s2);
+            Screen s3 = new Screen(game, "Living room", "You are in the living room of your house.");
+            s3.setLocation(200, 300);
+            game.addScreen(s3);
+            game.link("Home", "Backyard", "west", "The back door leading to the <> is open to the outside");
+            game.link("Backyard", "Home", "east", "The back door of the house is open to the <>");
+            game.link("Home", "Living room", "south", "There is a door to the <>", false, "The door is locked");
+            game.link("Living room", "Home", "north", "There is a door to the <>");
+            game.setCurrentScreen(s1);
+            game.write(new File("game.json"));
+        }
+        else
+        {
+            game = game.load(new File("game.json"));
+        }
         game.startGame();
     }
 }
@@ -256,10 +266,12 @@ class Screen
 
     public Screen(Game game, String title, String description)
     {
-        this.game =game;
+        register(game);
         this.title=title;
         this.description=description;
     }
+
+    public void register(Game game) { this.game=game; }
 
     public double getX() { return this.x; }
     public double getY() { return this.y; }
@@ -338,7 +350,7 @@ class Screen
             {
                 String groovy=entry.getValue();
                 Binding binding=new Binding();
-                binding.setVariable("ge", game);
+                binding.setVariable("game", game);
                 binding.setVariable("screen", this);
                 GroovyShell shell=new GroovyShell(binding);
                 shell.evaluate(groovy);
