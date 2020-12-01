@@ -1,0 +1,88 @@
+{
+  "screens": {
+    "Living room": {
+      "title": "Living room",
+      "description": "You are in the living room of your house.",
+      "links": {
+        "north": {
+          "screen": "Home",
+          "direction": "north",
+          "description": "There is a door to the \u003c\u003e",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": {},
+      "x": 200.0,
+      "y": 300.0
+    },
+    "Backyard": {
+      "title": "Backyard",
+      "description": "You are out the back of your house. On the grass you can see some garden tools.",
+      "links": {
+        "east": {
+          "screen": "Home",
+          "direction": "east",
+          "description": "The back door of the house is open to the \u003c\u003e",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {
+        "spade": {
+          "name": "spade",
+          "description": "It is a rusty old spade perfect for picking up dog poo.",
+          "insitu": "Amongst the garden tools you can see a \u003c\u003e"
+        }
+      },
+      "actions": {},
+      "x": 100.0,
+      "y": 200.0
+    },
+    "Home": {
+      "title": "Home",
+      "description": "You are at your home. There is a circular dining table in the center of the room.",
+      "links": {
+        "south": {
+          "screen": "Living room",
+          "direction": "south",
+          "description": "There is a door to the \u003c\u003e",
+          "cant_pass_message": "The door is locked",
+          "can_pass": false
+        },
+        "west": {
+          "screen": "Backyard",
+          "direction": "west",
+          "description": "The back door leading to the \u003c\u003e is open to the outside",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {
+        "key": {
+          "name": "key",
+          "description": "It\u0027s just a key",
+          "insitu": "On the table is a \u003c\u003e"
+        }
+      },
+      "actions": {
+        "unlock door( with)*( the)*( key)*": "if (!game.inventory.containsKey(\"key\"))\nSystem.out.println(\"You don\u0027t have a key\");\nelse\n{\nscreen.getLink(\"south\").setCanPass(true);\nSystem.out.println(\"The door unlocks\");\n}\ngame.hold();\n"
+      },
+      "x": 200.0,
+      "y": 200.0
+    }
+  },
+  "goPattern": {
+    "pattern": "(go )*(north|south|east|west|[nsew])",
+    "flags": 0
+  },
+  "getPattern": {
+    "pattern": "(get|pick up|take) (.+)",
+    "flags": 0
+  },
+  "lookPattern": {
+    "pattern": "(look at|look|examine) (.+)",
+    "flags": 0
+  }
+}
