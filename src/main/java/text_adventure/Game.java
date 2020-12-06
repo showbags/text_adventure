@@ -382,6 +382,8 @@ class ScreenLink
         this.cant_pass_message=cant_pass_message;
     }
 
+    public void setScreen(String screen) { this.screen=screen; }
+
     public String getScreen() { return this.screen; }
 
     public boolean canPass() { return can_pass; }
@@ -394,6 +396,8 @@ class ScreenLink
     public String getDirection() { return this.direction; }
 
     public String getDescription() { return this.description; }
+
+    public void setDescription(String description) { this.description = description; }
 
     public String describe()
     {

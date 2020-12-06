@@ -66,14 +66,8 @@ test {
 }
 
 task(runGame, dependsOn: 'classes', type: JavaExec) {
-    main = 'text_adventure.Game'
-    standardInput = System.in
+    //main = 'text_adventure.Game'
+    main = 'text_adventure.MakerMain'
+    //standardInput = System.in
     classpath = sourceSets.main.runtimeClasspath
 }
-
-/*task createStartScripts(type: CreateStartScripts) {
-    outputDir = file('build/install/text_adventure/bin')
-    mainClass = 'text_adventure.Game'
-    applicationName = 'game'
-    classpath = files('')
-}*/

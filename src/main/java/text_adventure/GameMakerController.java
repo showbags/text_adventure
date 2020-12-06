@@ -2,9 +2,13 @@ package text_adventure;
 
 import javafx.beans.property.*;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -16,7 +20,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +55,7 @@ public class GameMakerController
 
     private Game game;
     private HashMap<Screen,ScreenRect> rects = new HashMap<>();
+    private HashMap<ScreenLink,ScreenLinkLine> links = new HashMap<>();
 
     // Add a public no-args constructor
     public GameMakerController() { }
@@ -94,7 +102,7 @@ public class GameMakerController
                 rect.descriptionProperty().bind(descriptionArea.textProperty());
                 directionBox.getChildren().clear();
                 for (ScreenLink link : rect.getScreen().getLinks().values() )
-                    directionBox.getChildren().add(new DirectionForm(link));
+                    addDirectionForm(link);
                 itemsBox.getChildren().clear();
                 for (Item item : rect.getScreen().getItems().values())
                     itemsBox.getChildren().add(new ItemForm(item));
@@ -105,13 +113,32 @@ public class GameMakerController
                 rect.titleProperty().unbind();
                 rect.descriptionProperty().unbind();
                 List<Node> list = directionBox.getChildren();
-                list.subList(0, list.size()-1).clear();//leave item 0. It is the + button
+                if (!list.isEmpty())
+                    list.subList(0, list.size()-1).clear();//leave item 0. It is the + button
             }
         });
         selectOnly(rect);
         pane.getChildren().add(rect);
         for (ScreenLink link : screen.getLinks().values())
-            pane.getChildren().add(new ScreenLinkLine(rect, link));
+            addScreenLink(screen,link);
+    }
+
+    private void addDirectionForm(ScreenLink link)
+    {
+        directionBox.getChildren().add(new DirectionForm(link));
+    }
+
+    private void addScreenLink(Screen screen, ScreenLink link)
+    {
+        ScreenRect rect = rects.get(screen);
+        ScreenLinkLine linkLine = new ScreenLinkLine(rect, link);
+        links.put(link, linkLine);
+        pane.getChildren().add(linkLine);
+    }
+
+    public ScreenLinkLine getLinkLine(ScreenLink link)
+    {
+        return links.get(link);
     }
 
     @FXML
@@ -133,6 +160,34 @@ public class GameMakerController
     private void newDirection()
     {
         System.out.println("add direction");
+        ScreenRect selected = getSelected();
+        try
+        {
+            FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/screen_select.fxml"));
+            Node node = loader.load();
+            ScreenSelectDialogController c = loader.getController();
+            Stage stage = new Stage(StageStyle.UTILITY);
+            stage.setTitle("Select screen");
+            Scene scene = new Scene((Parent) node);
+            stage.setScene(scene);
+            c.setStage(stage);
+            c.setGame(game);
+            stage.showAndWait();
+            if (c.ok())
+            {
+                System.out.println("select this "+c.getSelectedScreen());
+            }
+
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+
+        //ScreenLink link = new ScreenLink(selected.getScreen().getTitle(), "", "", true, "");
+        selected.getScreen().link("","","",true,"");
+        //directionBox.getChildren().add(new DirectionForm(link));
     }
 
     @FXML
@@ -155,6 +210,19 @@ public class GameMakerController
                 ((ScreenRect)node).setSelected(false);
         }
         rect.setSelected(true);
+    }
+
+    private ScreenRect getSelected()
+    {
+        for (Node node : pane.getChildren())
+        {
+            if (node instanceof ScreenRect)
+                if ( ((ScreenRect)node).isSelected() )
+                {
+                    return (ScreenRect)node;
+                }
+        }
+        return null;
     }
 
     class ScreenRect extends StackPane
@@ -249,14 +317,20 @@ public class GameMakerController
             e.consume();
         });
     }
-    
-    static class DirectionForm extends VBox
+
+    class DirectionForm extends VBox
     {
         public DirectionForm(ScreenLink link)
         {
-            getChildren().add(makeTextField("To",link.getScreen()));
+            HBox toField = makeTextField("To",link.getScreen());
+            ((TextField)toField.getChildren().get(1)).setEditable(false);
+
+            getChildren().add(toField);
+
             getChildren().add(makeTextField("Direction",link.getDirection()));
-            getChildren().add(makeTextField("Description",link.getDescription()));
+            HBox descField = makeTextField("Description",link.getDescription());
+            ((TextField)descField.getChildren().get(1)).textProperty().addListener( (obs,ov,nv) -> link.setDescription(nv));
+            getChildren().add(descField);
 
             CheckBox cb = new CheckBox("Can pass");
             cb.setSelected(link.canPass());
@@ -265,6 +339,10 @@ public class GameMakerController
             tb.disableProperty().bind(cb.selectedProperty());
             HBox.setHgrow(tb, Priority.ALWAYS);
             getChildren().add(new HBox(cb, tb));
+
+            setPadding(new Insets(5));
+            setSpacing(3);
+            setStyle("-fx-border-color: black;");
         }
     }
 

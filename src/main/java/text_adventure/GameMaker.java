@@ -11,10 +11,11 @@ import java.io.File;
 
 public class GameMaker extends Application {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         // Here you can work with args - command line parameters
-        Application.launch(args);
-    }	
+        launch(args);
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
