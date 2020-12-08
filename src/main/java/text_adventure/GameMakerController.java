@@ -176,6 +176,7 @@ public class GameMakerController
             if (c.ok())
             {
                 System.out.println("select this "+c.getSelectedScreen());
+                game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), "", "");
             }
 
 
