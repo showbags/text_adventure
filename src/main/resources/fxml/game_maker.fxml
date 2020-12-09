@@ -97,7 +97,7 @@
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
                         </Label>
-                        <TextField fx:id="titleField" maxWidth="271.0" prefColumnCount="40" prefHeight="26.0" prefWidth="271.0" promptText="add title here">
+                        <TextField fx:id="titleField" editable="false" maxWidth="271.0" prefColumnCount="40" prefHeight="26.0" prefWidth="271.0" promptText="add title here">
                            <VBox.margin>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </VBox.margin>
