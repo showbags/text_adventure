@@ -20,9 +20,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -136,9 +138,30 @@ public class GameMakerController
         pane.getChildren().add(linkLine);
     }
 
-    public ScreenLinkLine getLinkLine(ScreenLink link)
+    @FXML
+    private void save()
     {
-        return links.get(link);
+        try
+        {
+            game.write(game.getFile());
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void saveAs()
+    {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Flows","*.flo","*.fli"));
+        chooser.setInitialFileName(game.getFile().toString());
+        File file = chooser.showSaveDialog(cursorRect.getScene().getWindow());
+        if (file != null)
+        {
+            game.setFile(file);
+            save();
+        }
     }
 
     @FXML
@@ -159,8 +182,8 @@ public class GameMakerController
     @FXML
     private void newDirection()
     {
-        System.out.println("add direction");
         ScreenRect selected = getSelected();
+        if (selected==null) return;
         try
         {
             FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/screen_select.fxml"));
@@ -175,8 +198,9 @@ public class GameMakerController
             stage.showAndWait();
             if (c.ok())
             {
-                System.out.println("select this "+c.getSelectedScreen());
-                game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), "", "");
+                ScreenLink link = game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), "", "");
+                addScreenLink(selected.getScreen(),  link);
+                addDirectionForm(link);
             }
 
 
@@ -184,11 +208,6 @@ public class GameMakerController
         {
             e.printStackTrace();
         }
-
-
-        //ScreenLink link = new ScreenLink(selected.getScreen().getTitle(), "", "", true, "");
-        selected.getScreen().link("","","",true,"");
-        //directionBox.getChildren().add(new DirectionForm(link));
     }
 
     @FXML
@@ -319,7 +338,7 @@ public class GameMakerController
         });
     }
 
-    class DirectionForm extends VBox
+    static class DirectionForm extends VBox
     {
         public DirectionForm(ScreenLink link)
         {

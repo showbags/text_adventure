@@ -14,6 +14,8 @@ public class Game
     //game details
     public Map<String,Screen> screens = new HashMap<>();
 
+    private File file;
+
     //game state
     private transient Screen currentScreen;
     private transient Map<String, Item> inventory=new HashMap<>();
@@ -27,11 +29,16 @@ public class Game
         Gson gson = new Gson();
         FileReader reader = new FileReader(jsonFile);
         Game game = gson.fromJson(reader, Game.class);
+        game.setFile(jsonFile);
         game.setCurrentScreen(game.getScreen("Home"));
         for (Screen screen : game.screens.values())
             screen.register(game);
         return game;
     }
+
+    public void setFile(File file) { this.file=file; }
+
+    public File getFile() { return this.file; }
 
     public void write(File jsonFile) throws IOException
     {
@@ -67,8 +74,6 @@ public class Game
         System.out.print("\n > ");
         Scanner in = new Scanner(System.in);
         String input = in. nextLine();
-        //System.out.println("console: "+System.console());
-        //String input=System.console().readLine().toLowerCase();
         System.out.println();
         Matcher goMatcher=goPattern.matcher(input);
         if (goMatcher.matches())
@@ -198,14 +203,14 @@ public class Game
         System.out.flush();
     }
 
-    public void link(String from, String to, String dir, String desc)
+    public ScreenLink link(String from, String to, String dir, String desc)
     {
-        link(from,to,dir,desc,true,"");
+        return link(from,to,dir,desc,true,"");
     }
 
-    public void link(String from, String to, String dir, String desc, boolean can_pass, String cant_pass_message)
+    public ScreenLink link(String from, String to, String dir, String desc, boolean can_pass, String cant_pass_message)
     {
-        screens.get(from).link(to,dir,desc,can_pass,cant_pass_message);
+        return screens.get(from).link(to,dir,desc,can_pass,cant_pass_message);
     }
 
 
@@ -244,7 +249,7 @@ public class Game
         }
         else
         {
-            game = game.load(new File("game.json"));
+            game = Game.load(new File("game.json"));
         }
         game.startGame();
     }
@@ -287,14 +292,15 @@ class Screen
         setY(y);
     }
 
-    public void link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
+    public ScreenLink link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
     {
-        addLink(new ScreenLink(screen, dir, desc, can_pass, cant_pass_message));
+        return addLink(new ScreenLink(screen, dir, desc, can_pass, cant_pass_message));
     }
 
-    public void addLink(ScreenLink link)
+    public ScreenLink addLink(ScreenLink link)
     {
         links.put(link.getDirection(), link);
+        return link;
     }
 
     public String getTitle() { return this.title; }
@@ -381,8 +387,6 @@ class ScreenLink
         this.can_pass=can_pass;
         this.cant_pass_message=cant_pass_message;
     }
-
-    public void setScreen(String screen) { this.screen=screen; }
 
     public String getScreen() { return this.screen; }
 
