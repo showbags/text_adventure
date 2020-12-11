@@ -82,9 +82,28 @@ public class GameMakerController
         pane.requestFocus();
         pane.setOnKeyPressed(keyEvent->{
             if (keyEvent.getCode()==KeyCode.SPACE){
-                Screen screen = new Screen(game);
-                screen.setLocation(cursorRect.getLayoutX(), cursorRect.getLayoutY());
-                addScreen(screen);
+                try
+                {
+                    FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/screen_name.fxml"));
+                    Node node = loader.load();
+                    ScreenNameDialogController c = loader.getController();
+                    Stage stage = new Stage(StageStyle.UTILITY);
+                    stage.setTitle("New screen name");
+                    Scene scene = new Scene((Parent) node);
+                    stage.setScene(scene);
+                    c.setStage(stage);
+                    stage.showAndWait();
+                    if (c.ok())
+                    {
+                        Screen screen = new Screen(game,c.getName());
+                        screen.setLocation(cursorRect.getLayoutX(), cursorRect.getLayoutY());
+                        game.addScreen(screen);
+                        addScreen(screen);
+                    }
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
                 keyEvent.consume();
             }
         });
@@ -198,7 +217,7 @@ public class GameMakerController
             stage.showAndWait();
             if (c.ok())
             {
-                ScreenLink link = game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), "", "");
+                ScreenLink link = game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), c.getDirection(), "");
                 addScreenLink(selected.getScreen(),  link);
                 addDirectionForm(link);
             }
@@ -271,6 +290,9 @@ public class GameMakerController
             setTranslateY(cursorRect.getTranslateY());
             setLayoutX(screen.getX());
             setLayoutY(screen.getY());
+            layoutXProperty().addListener( (obs,ov,nv) -> screen.setX(nv.doubleValue()) );
+            layoutYProperty().addListener( (obs,ov,nv) -> screen.setY(nv.doubleValue()) );
+
             focusedProperty().addListener( (obs,ov,nv)-> setStyle());
             setOnMouseEntered( e -> requestFocus() );
             setOnMouseExited( e -> getParent().requestFocus() );
@@ -347,7 +369,14 @@ public class GameMakerController
 
             getChildren().add(toField);
 
-            getChildren().add(makeTextField("Direction",link.getDirection()));
+            HBox dirField = makeTextField("Direction",link.getDirection());
+            ((TextField)dirField.getChildren().get(1)).textProperty().addListener( (obs,ov,nv) ->
+            {
+                System.out.println("setting new direction to "+nv);
+                link.setDirection(nv);
+            });
+            getChildren().add(dirField);
+
             HBox descField = makeTextField("Description",link.getDescription());
             ((TextField)descField.getChildren().get(1)).textProperty().addListener( (obs,ov,nv) -> link.setDescription(nv));
             getChildren().add(descField);

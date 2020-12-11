@@ -22,7 +22,7 @@ public class GameMaker extends Application {
         FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/game_maker.fxml"));
         Parent root = loader.load();
 
-        Game game = Game.load(new File("game.json"));
+        Game game = Game.load(new File("game3.json"));
         GameMakerController controller = loader.getController();
         controller.setGame(game);
 

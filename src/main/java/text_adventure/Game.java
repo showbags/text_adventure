@@ -58,7 +58,7 @@ public class Game
         } while (!currentScreen.isGameComplete());
     }
 
-    private void addScreen(Screen screen) { screens.put(screen.getTitle(),screen); }
+    public void addScreen(Screen screen) { screens.put(screen.getTitle(),screen); }
 
     private void setCurrentScreen(Screen screen)
     {
@@ -249,7 +249,7 @@ public class Game
         }
         else
         {
-            game = Game.load(new File("game.json"));
+            game = Game.load(new File("game3.json"));
         }
         game.startGame();
     }
@@ -266,7 +266,12 @@ class Screen
 
     public Screen(Game game)
     {
-        this(game,"","");
+        this(game,"");
+    }
+
+    public Screen(Game game, String title)
+    {
+        this(game,title,"");
     }
 
     public Screen(Game game, String title, String description)
@@ -398,6 +403,8 @@ class ScreenLink
     public String cantPassMessage() { return cant_pass_message; }
 
     public String getDirection() { return this.direction; }
+
+    public void setDirection(String direction ) { this.direction=direction; }
 
     public String getDescription() { return this.description; }
 

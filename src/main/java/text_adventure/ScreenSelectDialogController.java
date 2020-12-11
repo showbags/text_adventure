@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -18,11 +19,11 @@ public class ScreenSelectDialogController implements Initializable
     @FXML
     private ListView<String> listView;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources)
-    {
+    @FXML
+    private TextField dirField;
 
-    }
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {}
 
     public void setStage(Stage stage) { this.stage = stage; }
 
@@ -36,6 +37,8 @@ public class ScreenSelectDialogController implements Initializable
     {
         return listView.getSelectionModel().getSelectedItem();
     }
+
+    public String getDirection() { return dirField.getText(); }
 
     public boolean ok() { return ok; }
 
