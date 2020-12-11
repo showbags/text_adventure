@@ -264,11 +264,6 @@ class Screen
     private Map<String, String> actions=new HashMap<>();
     private double x,y;
 
-    public Screen(Game game)
-    {
-        this(game,"");
-    }
-
     public Screen(Game game, String title)
     {
         this(game,title,"");

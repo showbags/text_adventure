@@ -155,6 +155,7 @@ public class GameMakerController
         ScreenLinkLine linkLine = new ScreenLinkLine(rect, link);
         links.put(link, linkLine);
         pane.getChildren().add(linkLine);
+        linkLine.toBack();
     }
 
     @FXML
