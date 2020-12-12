@@ -20,9 +20,7 @@ public class Game
     private transient Screen currentScreen;
     private transient Map<String, Item> inventory=new HashMap<>();
 
-    private Game()
-    {
-    }
+    private Game() { }
 
     public static Game load(File jsonFile) throws IOException
     {
@@ -139,9 +137,9 @@ public class Game
         return getScreen(link.getScreen());
     }
 
-    private Pattern goPattern=Pattern.compile("(?:go )*(north|south|east|west|[nsew])");
-    private Pattern getPattern=Pattern.compile("(?:get|pick up|take) (.+)");
-    private Pattern lookPattern=Pattern.compile("(?:look at|look|examine) (.+)");
+    private static Pattern goPattern=Pattern.compile("(?:go )*(north|south|east|west|[nsew])");
+    private static Pattern getPattern=Pattern.compile("(?:get|pick up|take) (.+)");
+    private static Pattern lookPattern=Pattern.compile("(?:look at|look|examine) (.+)");
 
     private void handleGet(Matcher getMatcher)
     {
@@ -213,43 +211,52 @@ public class Game
         return screens.get(from).link(to,dir,desc,can_pass,cant_pass_message);
     }
 
+    public static Game defaultGame()
+    {
+        Game game = new Game();
+        game.setFile(new File("game.json"));
+        Screen s1 = new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
+        s1.setLocation(200, 200);
+        s1.addItem("key", "On the table is a <>", "It's just a key");
+        s1.addAction("unlock door( with)*( the)*( key)*",
+                """
+                        if (!game.inventory.containsKey("key"))
+                        System.out.println("You don't have a key");
+                        else
+                        {
+                        screen.getLink("south").setCanPass(true);
+                        System.out.println("The door unlocks");
+                        }
+                        game.hold();
+                        """
+        );
+        game.addScreen(s1);
+        Screen s2 = new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
+        s2.setLocation(100, 200);
+        s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
+        game.addScreen(s2);
+        Screen s3 = new Screen(game, "Living room", "You are in the living room of your house.");
+        s3.setLocation(200, 300);
+        game.addScreen(s3);
+        game.link("Home", "Backyard", "west", "The back door leading to the <> is open to the outside");
+        game.link("Backyard", "Home", "east", "The back door of the house is open to the <>");
+        game.link("Home", "Living room", "south", "There is a door to the <>", false, "The door is locked");
+        game.link("Living room", "Home", "north", "There is a door to the <>");
+        game.setCurrentScreen(s1);
+        return game;
+    }
 
     public static void main(String[] args) throws Exception
     {
-        Game game=new Game();
-        if (false)
+        Game game;
+        if (args.length==0)
         {
-            Screen s1 = new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
-            s1.setLocation(200, 200);
-            s1.addItem("key", "On the table is a <>", "It's just a key");
-            s1.addAction("unlock door( with)*( the)*( key)*",
-                    "if (!game.inventory.containsKey(\"key\"))\n"+
-                            "System.out.println(\"You don't have a key\");\n"+
-                            "else\n"+
-                            "{\n"+
-                            "screen.getLink(\"south\").setCanPass(true);\n"+
-                            "System.out.println(\"The door unlocks\");\n"+
-                            "}\n"+
-                            "game.hold();\n"
-            );
-            game.addScreen(s1);
-            Screen s2 = new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
-            s2.setLocation(100, 200);
-            s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
-            game.addScreen(s2);
-            Screen s3 = new Screen(game, "Living room", "You are in the living room of your house.");
-            s3.setLocation(200, 300);
-            game.addScreen(s3);
-            game.link("Home", "Backyard", "west", "The back door leading to the <> is open to the outside");
-            game.link("Backyard", "Home", "east", "The back door of the house is open to the <>");
-            game.link("Home", "Living room", "south", "There is a door to the <>", false, "The door is locked");
-            game.link("Living room", "Home", "north", "There is a door to the <>");
-            game.setCurrentScreen(s1);
-            game.write(new File("game.json"));
+            game = defaultGame();
+            //game.write(new File("game.json"));
         }
         else
         {
-            game = Game.load(new File("game3.json"));
+            game = Game.load(new File(args[0]));
         }
         game.startGame();
     }
@@ -261,7 +268,7 @@ class Screen
     private String title, description;
     private Map<String, ScreenLink> links=new HashMap<>();
     private Map<String, Item> items=new HashMap<>();
-    private Map<String, String> actions=new HashMap<>();
+    private List<Action> actions=new ArrayList<>();
     private double x,y;
 
     public Screen(Game game, String title)
@@ -312,9 +319,11 @@ class Screen
 
     public String getDescription() { return this.description; }
 
-    public void addItem(String name, String insitu, String description)
+    public Item addItem(String name, String insitu, String description)
     {
-        items.put(name, new Item(name, insitu, description));
+        Item item = new Item(name, insitu, description);
+        items.put(name, item);
+        return item;
     }
 
     public boolean hasItem(String name)
@@ -332,6 +341,11 @@ class Screen
         return items.remove(name);
     }
 
+    public void removeAction(Action action)
+    {
+        actions.remove(action);
+    }
+
     public Map<String, ScreenLink> getLinks() { return links; }
 
     public ScreenLink getLink(String dir)
@@ -341,9 +355,13 @@ class Screen
 
     public Map<String, Item> getItems() { return this.items; }
 
-    public void addAction(String regex, String action)
+    public List<Action> getActions() { return this.actions; }
+
+    public Action addAction(String regex, String script)
     {
-        actions.put(regex, action);
+        Action action = new Action(regex, script);
+        actions.add(action);
+        return action;
     }
 
     public void display()
@@ -358,12 +376,12 @@ class Screen
 
     public void handleInput(String input)
     {
-        for (Map.Entry<String, String> entry : actions.entrySet())
+        for (Action action : actions)
         {
-            String regex=entry.getKey();
+            String regex=action.getRegex();
             if (input.matches(regex))
             {
-                String groovy=entry.getValue();
+                String groovy=action.getScript();
                 Binding binding=new Binding();
                 binding.setVariable("game", game);
                 binding.setVariable("screen", this);
@@ -431,6 +449,8 @@ class Item
 
     public String getInsitu() { return this.insitu;}
 
+    public void setInsitu(String insitu) { this.insitu=insitu; }
+
     public String describeInSitu(){
         return insitu.replaceAll("<>","\033[0;1m"+name+"\033[0m");
     }
@@ -440,4 +460,26 @@ class Item
     }
 
     public String getDescription(){ return this.description; }
+
+    public void setDescription(String description) { this.description=description; }
+}
+
+class Action
+{
+    private String regex, script;
+
+    public Action(String regex, String script)
+    {
+        this.regex=regex;
+        this.script=script;
+    }
+
+    public String getRegex() { return this.regex; }
+
+    public String getScript() { return this.script; }
+
+    public void setRegex(String regex) { this.regex=regex; }
+
+    public void setScript(String script) { this.script=script; }
+
 }

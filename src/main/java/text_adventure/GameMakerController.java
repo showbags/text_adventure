@@ -125,8 +125,11 @@ public class GameMakerController
 
                 itemsBox.getChildren().clear();
                 for (Item item : screen.getItems().values())
-                    itemsBox.getChildren().add(new ItemForm(this,screen,item));
+                    addItemForm(screen,item);
+
                 actionsBox.getChildren().clear();
+                for (Action action : screen.getActions())
+                    addActionForm(screen,action);
             }
             else
             {
@@ -159,6 +162,11 @@ public class GameMakerController
         pane.getChildren().remove(links.get(link));
     }
 
+    public void addItemForm(Screen screen, Item item)
+    {
+        itemsBox.getChildren().add(new ItemForm(this, screen, item));
+    }
+
     public void removeItem(Screen screen, Item item)
     {
         screen.removeItem(item.getName());
@@ -167,6 +175,21 @@ public class GameMakerController
     public void removeItemForm(ItemForm form)
     {
         itemsBox.getChildren().remove(form);
+    }
+
+    public void addActionForm(Screen screen, Action action)
+    {
+        actionsBox.getChildren().add(new ActionForm(this, screen, action));
+    }
+
+    public void removeAction(Screen screen, Action action)
+    {
+        screen.removeAction(action);
+    }
+
+    public void removeActionForm(ActionForm form)
+    {
+        actionsBox.getChildren().remove(form);
     }
 
     private void addScreenLink(Screen screen, ScreenLink link)
@@ -253,13 +276,34 @@ public class GameMakerController
     @FXML
     private void newItem()
     {
-        System.out.println("add item");
+        try
+        {
+            FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/screen_name.fxml"));
+            Node node=loader.load();
+            ScreenNameDialogController c = loader.getController();
+            Stage stage = new Stage(StageStyle.UTILITY);
+            stage.setTitle("New item name");
+            Scene scene = new Scene((Parent) node);
+            stage.setScene(scene);
+            c.setStage(stage);
+            stage.showAndWait();
+            if (c.ok())
+            {
+                Screen screen = getSelected().getScreen();
+                Item item = screen.addItem(c.getName(),"","");
+                addItemForm(screen,item);
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void newAction()
     {
-        System.out.println("add action");
+        Action action = getSelected().getScreen().addAction("","");
+        addActionForm(getSelected().getScreen(), action);
     }
 
     public void selectOnly(ScreenRect rect)
@@ -417,14 +461,35 @@ public class GameMakerController
         public ItemForm(GameMakerController controller, Screen screen, Item item)
         {
             getChildren().add(makeTextField("Name",item.getName()));
-            getChildren().add(makeTextField("Description",item.getDescription()));
-            getChildren().add(makeTextField("In situ",item.getInsitu()));
+            getChildren().add(makeTextField("Description",item.getDescription(),(obs,ov,nv) -> item.setDescription(nv)));
+            getChildren().add(makeTextField("In situ",item.getInsitu(),(obs,ov,nv) -> item.setInsitu(nv)));
             Button takeButton = new Button("-");
             takeButton.setFont(new Font(8));
             takeButton.setOnAction( evt ->
             {
                 controller.removeItem(screen, item);
                 controller.removeItemForm(this);
+            });
+            getChildren().add(takeButton);
+
+            setPadding(new Insets(5));
+            setSpacing(3);
+            setStyle("-fx-border-color: black;");
+        }
+    }
+
+    static class ActionForm extends VBox
+    {
+        public ActionForm(GameMakerController controller, Screen screen, Action action)
+        {
+            getChildren().add(makeTextField("Regex",action.getRegex(),(obs,ov,nv) -> action.setRegex(nv)));
+            getChildren().add(makeTextArea("Script",action.getScript(),(obs,ov,nv) -> action.setScript(nv)));
+            Button takeButton = new Button("-");
+            takeButton.setFont(new Font(8));
+            takeButton.setOnAction( evt ->
+            {
+                controller.removeAction(screen, action);
+                controller.removeActionForm(this);
             });
             getChildren().add(takeButton);
 
@@ -444,6 +509,19 @@ public class GameMakerController
         Label label = new Label(name);
         label.setMinWidth(100);
         TextField field = new TextField(text);
+        if (listener!=null)
+            field.textProperty().addListener(listener);
+        else
+            field.setEditable(false);
+        HBox.setHgrow(field, Priority.ALWAYS);
+        return new HBox(label, field);
+    }
+
+    static HBox makeTextArea(String name, String text, ChangeListener<? super String> listener)
+    {
+        Label label = new Label(name);
+        label.setMinWidth(100);
+        TextArea field = new TextArea(text);
         if (listener!=null)
             field.textProperty().addListener(listener);
         else
