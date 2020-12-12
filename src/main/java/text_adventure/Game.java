@@ -28,7 +28,11 @@ public class Game
         FileReader reader = new FileReader(jsonFile);
         Game game = gson.fromJson(reader, Game.class);
         game.setFile(jsonFile);
-        game.setCurrentScreen(game.getScreen("Home"));
+        for (Screen screen : game.screens.values())
+        {
+            if (screen.getDescription().contains("home"))
+                game.setCurrentScreen(screen);
+        }
         for (Screen screen : game.screens.values())
             screen.register(game);
         return game;
@@ -73,15 +77,12 @@ public class Game
         Scanner in = new Scanner(System.in);
         String input = in. nextLine();
         System.out.println();
+        if (input.isBlank()) return;
         Matcher goMatcher=goPattern.matcher(input);
         if (goMatcher.matches())
         {
-            Screen screen=handleMove(goMatcher);
-            if (screen!=null)
-            {
-                setCurrentScreen(screen);
-                return;
-            }
+            setCurrentScreen(handleMove(goMatcher));
+            return;
         }
         Matcher getMatcher=getPattern.matcher(input);
         if (getMatcher.matches())
@@ -95,7 +96,6 @@ public class Game
             handleLook(lookMatcher);
             return;
         }
-        currentScreen.handleInput(input);
         if (input.equals("i"))
         {
             inventory();
@@ -103,10 +103,15 @@ public class Game
         }
         if (input.equals("q"))
         {
-            System.out.println("Bye!");
-            System.exit(0);
+            endGame();
         }
-        System.out.println("Unknown command "+input);
+        currentScreen.handleInput(input);
+    }
+
+    public void endGame()
+    {
+        System.out.println("Bye!");
+        System.exit(0);
     }
 
     private Screen handleMove(Matcher goMatcher)
@@ -125,13 +130,12 @@ public class Game
         if (link==null)
         {
             error("You can't go that way");
-            return null;
+            return currentScreen;
         }
         if (!link.canPass())
         {
-            System.out.println(link.cantPassMessage());
-            hold();
-            return null;
+            error(link.cantPassMessage());
+            return currentScreen;
         }
 
         return getScreen(link.getScreen());
@@ -139,7 +143,7 @@ public class Game
 
     private static Pattern goPattern=Pattern.compile("(?:go )*(north|south|east|west|[nsew])");
     private static Pattern getPattern=Pattern.compile("(?:get|pick up|take) (.+)");
-    private static Pattern lookPattern=Pattern.compile("(?:look at|look|examine) (.+)");
+    private static Pattern lookPattern=Pattern.compile("(?:look at|look|examine|read) (.+)");
 
     private void handleGet(Matcher getMatcher)
     {
@@ -156,16 +160,10 @@ public class Game
     {
         String item=lookMatcher.group(1);
         if (currentScreen.hasItem(item))
-        {
-            System.out.println("\n"+currentScreen.getItem(item).getDescription());
-            hold();
-            return;
-        }
-        if (inventory.containsKey(item))
-        {
-            System.out.println("\n"+inventory.get(item).getDescription());
-            hold();
-        } else
+            error("\n"+currentScreen.getItem(item).getDescription());
+        else if (inventory.containsKey(item))
+            error("\n"+inventory.get(item).getDescription());
+        else
             error("There is no "+item+".");
     }
 
@@ -180,18 +178,19 @@ public class Game
     private void error(String error)
     {
         System.out.print(error);
-        try
+        hold();
+        /*try
         {
             Thread.sleep(1000);
         } catch (InterruptedException ie)
         {
             ie.printStackTrace();
-        }
+        }*/
     }
 
-    private void hold()
+    public void hold()
     {
-        System.out.print("\nPress ENTER");
+        System.out.print("\n\nPress ENTER");
         System.console().readLine();
     }
 
@@ -215,33 +214,64 @@ public class Game
     {
         Game game = new Game();
         game.setFile(new File("game.json"));
-        Screen s1 = new Screen(game, "Home", "You are at your home. There is a circular dining table in the center of the room.");
+        Screen s1 = new Screen(game, "Kitchen", "You are at kitchen of your home. There is a circular dining table in the center of the room.");
         s1.setLocation(200, 200);
         s1.addItem("key", "On the table is a <>", "It's just a key");
         s1.addAction("unlock door( with)*( the)*( key)*",
                 """
                         if (!game.inventory.containsKey("key"))
-                        System.out.println("You don't have a key");
+                        game.error("You don't have a key");
                         else
                         {
                         screen.getLink("south").setCanPass(true);
-                        System.out.println("The door unlocks");
+                        game.error("The door unlocks");
                         }
-                        game.hold();
+                        """
+        );
+        s1.addAction("make( a)* sandwich",
+                """
+                        if (!game.inventory.containsKey("bread"))
+                        game.error("You need bread to make a sandwich");
+                        else if (!game.inventory.containsKey("vegemite"))
+                        game.error("Some vegemite would be nice");
+                        else if (!game.inventory.containsKey("knife"))
+                        game.error("How are you going to spread the vegemite with no knife?");
+                        else
+                        {
+                        System.out.println("You make a sandwich and win the game!!!!");
+                        System.out.println("");
+                        System.out.println(" ------------  CONGRATULATIONS!!!  ------------");
+                        System.out.println("");
+                        game.endGame();
+                        }
                         """
         );
         game.addScreen(s1);
         Screen s2 = new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
         s2.setLocation(100, 200);
-        s2.addItem("spade", "Amongst the garden tools you can see a <>", "It is a rusty old spade perfect for picking up dog poo.");
+        s2.addItem("knife", "Amongst the garden tools you can see a <>", "It looks like a pretty good sandwich making knife.");
         game.addScreen(s2);
-        Screen s3 = new Screen(game, "Living room", "You are in the living room of your house.");
+        Screen s3 = new Screen(game, "Laundry", "You are in the laundry of your house.");
         s3.setLocation(200, 300);
         game.addScreen(s3);
-        game.link("Home", "Backyard", "west", "The back door leading to the <> is open to the outside");
-        game.link("Backyard", "Home", "east", "The back door of the house is open to the <>");
-        game.link("Home", "Living room", "south", "There is a door to the <>", false, "The door is locked");
-        game.link("Living room", "Home", "north", "There is a door to the <>");
+        Screen s4 = new Screen(game, "Pool area", "You are in the pool area. There is a lovely clear pool that looks nice for swimming in.");
+        s4.setLocation(200, 400);
+        s4.addItem("note", "On the ground there is a <>", "The note says \"Go to the kitchen and make a sandwich to win the game\"");
+        game.addScreen(s4);
+        Screen s5 = new Screen(game, "Pantry", "You are in the pantry.");
+        s5.setLocation(200, 100);
+        s5.addItem("vegemite", "There is a <> on the shelves", "Mmmm. That would be nice on some bread");
+        s5.addItem("bread", "There is some <> in the bread box", "It is perfect bread for making sandwiches");
+        game.addScreen(s5);
+
+        game.link("Kitchen", "Backyard", "west", "The back door leading to the <> is open to the outside");
+        game.link("Kitchen", "Laundry", "south", "There is a door to the <>", false, "The door is locked");
+        game.link("Kitchen", "Pantry","north", "There is an open pantry door to the <>");
+        game.link("Pantry", "Kitchen","south", "You can leave the pantry to the <>");
+        game.link("Backyard", "Kitchen", "east", "The back door of the house is open to the <>");
+        game.link("Laundry", "Kitchen", "north", "There is a door to the <>");
+        game.link("Laundry", "Pool area", "south", "There is a door leading outside to the <>");
+        game.link("Pool area", "Laundry", "north", "To the <> is the laundry door");
         game.setCurrentScreen(s1);
         return game;
     }
@@ -387,8 +417,11 @@ class Screen
                 binding.setVariable("screen", this);
                 GroovyShell shell=new GroovyShell(binding);
                 shell.evaluate(groovy);
+                return;
             }
         }
+        System.out.println("I don't understand \""+input+"\"");
+        game.hold();
     }
 
     public boolean isGameComplete()
