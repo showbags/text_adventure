@@ -302,6 +302,11 @@ class Screen
         links.put(link.getDirection(), link);
         return link;
     }
+    
+    public void removeLink(ScreenLink link)
+    {
+        links.remove(game.getScreen(link.getScreen()).getTitle());
+    }
 
     public String getTitle() { return this.title; }
 

@@ -1,6 +1,7 @@
 package text_adventure;
 
 import javafx.beans.property.*;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -9,10 +10,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -122,11 +120,12 @@ public class GameMakerController
                 descriptionArea.setText(rect.descriptionProperty().getValue());
                 rect.descriptionProperty().bind(descriptionArea.textProperty());
                 directionBox.getChildren().clear();
-                for (ScreenLink link : rect.getScreen().getLinks().values() )
-                    addDirectionForm(link);
+                for (ScreenLink link : screen.getLinks().values() )
+                    addDirectionForm(screen,link);
+
                 itemsBox.getChildren().clear();
-                for (Item item : rect.getScreen().getItems().values())
-                    itemsBox.getChildren().add(new ItemForm(item));
+                for (Item item : screen.getItems().values())
+                    itemsBox.getChildren().add(new ItemForm(this,screen,item));
                 actionsBox.getChildren().clear();
             }
             else
@@ -144,9 +143,30 @@ public class GameMakerController
             addScreenLink(screen,link);
     }
 
-    private void addDirectionForm(ScreenLink link)
+    private void addDirectionForm(Screen screen, ScreenLink link)
     {
-        directionBox.getChildren().add(new DirectionForm(link));
+        directionBox.getChildren().add(new DirectionForm(this,screen,link));
+    }
+
+    private void removeDirectionForm(DirectionForm form)
+    {
+        directionBox.getChildren().remove(form);
+    }
+
+    private void removeLink(Screen screen, ScreenLink link)
+    {
+        screen.removeLink(link);
+        pane.getChildren().remove(links.get(link));
+    }
+
+    public void removeItem(Screen screen, Item item)
+    {
+        screen.removeItem(item.getName());
+    }
+
+    public void removeItemForm(ItemForm form)
+    {
+        itemsBox.getChildren().remove(form);
     }
 
     private void addScreenLink(Screen screen, ScreenLink link)
@@ -219,8 +239,8 @@ public class GameMakerController
             if (c.ok())
             {
                 ScreenLink link = game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), c.getDirection(), "");
-                addScreenLink(selected.getScreen(),  link);
-                addDirectionForm(link);
+                addScreenLink(selected.getScreen(), link);
+                addDirectionForm(selected.getScreen(),link);
             }
 
 
@@ -363,24 +383,11 @@ public class GameMakerController
 
     static class DirectionForm extends VBox
     {
-        public DirectionForm(ScreenLink link)
+        public DirectionForm(GameMakerController controller, Screen screen, ScreenLink link)
         {
-            HBox toField = makeTextField("To",link.getScreen());
-            ((TextField)toField.getChildren().get(1)).setEditable(false);
-
-            getChildren().add(toField);
-
-            HBox dirField = makeTextField("Direction",link.getDirection());
-            ((TextField)dirField.getChildren().get(1)).textProperty().addListener( (obs,ov,nv) ->
-            {
-                System.out.println("setting new direction to "+nv);
-                link.setDirection(nv);
-            });
-            getChildren().add(dirField);
-
-            HBox descField = makeTextField("Description",link.getDescription());
-            ((TextField)descField.getChildren().get(1)).textProperty().addListener( (obs,ov,nv) -> link.setDescription(nv));
-            getChildren().add(descField);
+            getChildren().add(makeTextField("To",link.getScreen()));
+            getChildren().add(makeTextField("Direction",link.getDirection(),(obs,ov,nv) -> link.setDirection(nv)));
+            getChildren().add(makeTextField("Description",link.getDescription(),(obs,ov,nv) -> link.setDescription(nv)));
 
             CheckBox cb = new CheckBox("Can pass");
             cb.setSelected(link.canPass());
@@ -390,6 +397,15 @@ public class GameMakerController
             HBox.setHgrow(tb, Priority.ALWAYS);
             getChildren().add(new HBox(cb, tb));
 
+            Button takeButton = new Button("-");
+            takeButton.setFont(new Font(8));
+            takeButton.setOnAction( evt ->
+            {
+                controller.removeLink(screen, link);
+                controller.removeDirectionForm(this);
+            });
+            getChildren().add(takeButton);
+
             setPadding(new Insets(5));
             setSpacing(3);
             setStyle("-fx-border-color: black;");
@@ -398,21 +414,42 @@ public class GameMakerController
 
     static class ItemForm extends VBox
     {
-        public ItemForm(Item item)
+        public ItemForm(GameMakerController controller, Screen screen, Item item)
         {
             getChildren().add(makeTextField("Name",item.getName()));
             getChildren().add(makeTextField("Description",item.getDescription()));
             getChildren().add(makeTextField("In situ",item.getInsitu()));
+            Button takeButton = new Button("-");
+            takeButton.setFont(new Font(8));
+            takeButton.setOnAction( evt ->
+            {
+                controller.removeItem(screen, item);
+                controller.removeItemForm(this);
+            });
+            getChildren().add(takeButton);
+
+            setPadding(new Insets(5));
+            setSpacing(3);
+            setStyle("-fx-border-color: black;");
         }
     }
 
     static HBox makeTextField(String name, String text)
     {
+        return makeTextField(name,text,null);
+    }
+
+    static HBox makeTextField(String name, String text, ChangeListener<? super String> listener)
+    {
         Label label = new Label(name);
         label.setMinWidth(100);
-        TextField descField = new TextField(text);
-        HBox.setHgrow(descField, Priority.ALWAYS);
-        return new HBox(label, descField);
+        TextField field = new TextField(text);
+        if (listener!=null)
+            field.textProperty().addListener(listener);
+        else
+            field.setEditable(false);
+        HBox.setHgrow(field, Priority.ALWAYS);
+        return new HBox(label, field);
     }
 
     class ScreenLinkLine extends CubicCurve
@@ -454,7 +491,6 @@ public class GameMakerController
                 controlY2Property().bind(endYProperty());
             }
         }
-
     }
 }
 
