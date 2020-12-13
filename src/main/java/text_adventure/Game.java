@@ -1,21 +1,20 @@
 package text_adventure;
 
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.util.regex.*;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Game
 {
-    //TODO: spell check unknown commands
     //TODO: ascii art for images
     //TODO: add optional tag to identify screens (default to screen name)
-    //TODO: game saving and save as
+    //TODO: game saving and loading
 
     //game details
     public Map<String,Screen> screens = new HashMap<>();
@@ -52,11 +51,7 @@ public class Game
         FileReader reader = new FileReader(jsonFile);
         Game game = gson.fromJson(reader, Game.class);
         game.setFile(jsonFile);
-        for (Screen screen : game.screens.values())
-        {
-            if (screen.getDescription().contains("home"))
-                game.setCurrentScreen(screen);
-        }
+        game.setCurrentScreenToStartScreen();
         for (Screen screen : game.screens.values())
             screen.register(game);
         return game;
@@ -86,6 +81,13 @@ public class Game
     }
 
     public void addScreen(Screen screen) { screens.put(screen.getTitle(),screen); }
+
+    public void removeScreen(Screen screen) { screens.remove(screen.getTitle()); }
+
+    private void setCurrentScreenToStartScreen()
+    {
+        setCurrentScreen(screens.get(startScreen));
+    }
 
     private void setCurrentScreen(Screen screen)
     {
@@ -277,13 +279,6 @@ public class Game
     {
         System.out.print(error);
         hold();
-        /*try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie)
-        {
-            ie.printStackTrace();
-        }*/
     }
 
     public void hold()

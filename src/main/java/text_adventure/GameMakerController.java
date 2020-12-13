@@ -104,6 +104,15 @@ public class GameMakerController
                 }
                 keyEvent.consume();
             }
+            else if (keyEvent.getCode()==KeyCode.DELETE)
+            {
+                ScreenRect selected = getSelected();
+                pane.getChildren().remove(selected);
+                for (ScreenLink link : selected.getScreen().getLinks().values())
+                    pane.getChildren().remove(links.get(link));
+                game.removeScreen(selected.getScreen());
+                keyEvent.consume();
+            }
         });
     }
 

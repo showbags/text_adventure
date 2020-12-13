@@ -1,0 +1,214 @@
+{
+  "screens": {
+    "The beach": {
+      "title": "The beach",
+      "description": "",
+      "links": {
+        "east": {
+          "screen": "Green grove",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        "south": {
+          "screen": "South beach",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 158.0,
+      "y": 197.0
+    },
+    "Green grove": {
+      "title": "Green grove",
+      "description": "",
+      "links": {
+        "south": {
+          "screen": "Valley trail",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        "west": {
+          "screen": "The beach",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 320.0,
+      "y": 240.0
+    },
+    "South beach": {
+      "title": "South beach",
+      "description": "",
+      "links": {
+        "south": {
+          "screen": "Southern tip",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        "north": {
+          "screen": "The beach",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 162.0,
+      "y": 315.0
+    },
+    "North beach": {
+      "title": "North beach",
+      "description": "",
+      "links": {},
+      "items": {},
+      "actions": [],
+      "x": 160.0,
+      "y": 80.0
+    },
+    "Valley trail": {
+      "title": "Valley trail",
+      "description": "",
+      "links": {
+        "east": {
+          "screen": "Bridge west",
+          "direction": "east",
+          "description": "You notice that on the trail to the \u003c\u003e is rather scary looking bear.",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        "north": {
+          "screen": "Green grove",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 342.0,
+      "y": 373.0
+    },
+    "Bridge west": {
+      "title": "Bridge west",
+      "description": "",
+      "links": {
+        "west": {
+          "screen": "Valley trail",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 498.0,
+      "y": 370.0
+    },
+    "Southern tip": {
+      "title": "Southern tip",
+      "description": "",
+      "links": {
+        "east": {
+          "screen": "Marshes",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        "north": {
+          "screen": "South beach",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 160.0,
+      "y": 528.0
+    },
+    "Shipwreck": {
+      "title": "Shipwreck",
+      "description": "",
+      "links": {
+        "east": {
+          "screen": "Marshes",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        "down": {
+          "screen": "Below deck",
+          "direction": "down",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 156.0,
+      "y": 653.0
+    },
+    "Below deck": {
+      "title": "Below deck",
+      "description": "",
+      "links": {
+        "up": {
+          "screen": "Shipwreck",
+          "direction": "up",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 58.0,
+      "y": 745.0
+    },
+    "Marshes": {
+      "title": "Marshes",
+      "description": "",
+      "links": {
+        "west": {
+          "screen": "Southern tip",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      },
+      "items": {},
+      "actions": [],
+      "x": 302.0,
+      "y": 530.0
+    }
+  },
+  "file": {
+    "path": "marooned.json"
+  },
+  "startScreen": "The beach",
+  "gameName": "Marooned",
+  "gameOverview": "You have been left on a deserted island by your pirate comrads. Your task is to locate the hidden treasure and send a signal to them once you have it. You will not be rescued until you find it.\n\nWhy only you? Who knows what dangers lurk on this mysterious island. They selected you because you were the smartest, strongest and bravest of their crew. Thanks a lot!"
+}
