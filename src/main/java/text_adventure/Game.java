@@ -11,10 +11,19 @@ import groovy.lang.GroovyShell;
 
 public class Game
 {
+    //TODO: help screen
+    //TODO: spell check unknown commands
+    //TODO: ascii art for images
+    //TODO: add name of game
+    //TODO: add home screen
+    //TODO: add optional tag to identify screens (default to screen name)
+    //TODO: game saving and save as
+
     //game details
     public Map<String,Screen> screens = new HashMap<>();
 
     private File file;
+    private String startScreen, gameName, gameOverview;
 
     //game state
     private transient Screen currentScreen;
@@ -78,6 +87,8 @@ public class Game
         String input = in. nextLine();
         System.out.println();
         if (input.isBlank()) return;
+        if (currentScreen.handleInput(input))
+            return;
         Matcher goMatcher=goPattern.matcher(input);
         if (goMatcher.matches())
         {
@@ -104,8 +115,17 @@ public class Game
         if (input.equals("q"))
         {
             endGame();
+            return;
         }
-        currentScreen.handleInput(input);
+        if (input.equals("help"))
+        {
+            gameOverview();
+            generalHelp();
+        }
+        //fall through to here
+        System.out.println("I don't understand \""+input+"\"");
+        hold();
+
     }
 
     public void endGame()
@@ -173,6 +193,42 @@ public class Game
         for (Item item : inventory.values())
             System.out.println(" * "+item);
         hold();
+    }
+
+    private void gameOverview()
+    {
+        System.out.println(gameOverview);
+    }
+
+    private void generalHelp()
+    {
+        System.out.printf(
+                """
+    %s  is a text adventure game. It consists of many different locations each of which contains a description of the scenery and objects 
+    within it. You can move between locations by observing the directions that are available to you. You will find you way through the
+    game by experimenting with different commands. Don't be disappointed if the game doesn't understand everything that you type.
+    
+    Some examples of commands that might do useful things:
+    
+     > go north         - move to the location to the north (if one exists)
+     
+     > get pen          - if there is a pen to pick up
+     > pick up pen      - if there is a pen to pick up
+     
+     > look at pen      - take a closer look at the pen
+     
+     > tie rope to tree - if there's a rope and a tree ... it's worth a try
+     
+     > inventory/i        - show me the things that I'm currently carrying
+     
+     > quit/q             - quit the game
+     
+     > save               - save your current game
+     
+     > help               - show this screen
+     
+     Good luck!!
+    """,gameName);
     }
 
     private void error(String error)
@@ -404,7 +460,7 @@ class Screen
         System.out.println();
     }
 
-    public void handleInput(String input)
+    public boolean handleInput(String input)
     {
         for (Action action : actions)
         {
@@ -417,11 +473,12 @@ class Screen
                 binding.setVariable("screen", this);
                 GroovyShell shell=new GroovyShell(binding);
                 shell.evaluate(groovy);
-                return;
+                game.hold();
+                return true;
             }
         }
-        System.out.println("I don't understand \""+input+"\"");
-        game.hold();
+        return false;
+
     }
 
     public boolean isGameComplete()
