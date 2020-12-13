@@ -1,6 +1,7 @@
 package text_adventure;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.*;
 
@@ -26,7 +27,24 @@ public class Game
     private transient Screen currentScreen;
     private transient Map<String, Item> inventory=new HashMap<>();
 
-    private Game() { }
+    private static Set<String> words = new HashSet<>();
+
+    private Game()
+    {
+        try
+        {
+            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+            InputStream is = classloader.getResourceAsStream("words.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ( (line=reader.readLine())!=null ) {
+                words.add(line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static Game load(File jsonFile) throws IOException
     {
@@ -118,6 +136,11 @@ public class Game
         if (input.equals("help"))
         {
             overviewAndHelp();
+            return;
+        }
+        if (spellCheck(input))
+        {
+            return;
         }
         //fall through to here
         System.out.println("I don't understand \""+input+"\"");
@@ -235,6 +258,19 @@ public class Game
      
      Good luck!!
     """,gameName);
+    }
+
+    private boolean spellCheck(String input)
+    {
+        for (String word : input.split("\\s+"))
+        {
+            if (!words.contains(word))
+            {
+                error("What's a \""+word+"\"?");
+                return true;
+            }
+        }
+        return false;
     }
 
     private void error(String error)
