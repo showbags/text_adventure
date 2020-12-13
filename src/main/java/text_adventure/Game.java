@@ -11,11 +11,8 @@ import groovy.lang.GroovyShell;
 
 public class Game
 {
-    //TODO: help screen
     //TODO: spell check unknown commands
     //TODO: ascii art for images
-    //TODO: add name of game
-    //TODO: add home screen
     //TODO: add optional tag to identify screens (default to screen name)
     //TODO: game saving and save as
 
@@ -61,6 +58,7 @@ public class Game
 
     private void startGame()
     {
+        overviewAndHelp();
         do
         {
             clear();
@@ -119,8 +117,7 @@ public class Game
         }
         if (input.equals("help"))
         {
-            gameOverview();
-            generalHelp();
+            overviewAndHelp();
         }
         //fall through to here
         System.out.println("I don't understand \""+input+"\"");
@@ -192,6 +189,15 @@ public class Game
         System.out.println("\nYou have the following items:\n");
         for (Item item : inventory.values())
             System.out.println(" * "+item);
+        hold();
+    }
+
+    private void overviewAndHelp()
+    {
+        clear();
+        gameOverview();
+        System.out.println();
+        generalHelp();
         hold();
     }
 
@@ -346,6 +352,18 @@ public class Game
         }
         game.startGame();
     }
+
+    public void setGameOverview(String gameOverview) { this.gameOverview=gameOverview; }
+
+    public String getGameOverview() { return this.gameOverview; }
+
+    public void setGameName(String gameName) { this.gameName=gameName; }
+
+    public String getGameName() { return this.gameName; }
+
+    public String getStartScreen() { return startScreen; }
+
+    public void setStartScreen(String startScreen) { this.startScreen=startScreen; }
 }
 
 class Screen

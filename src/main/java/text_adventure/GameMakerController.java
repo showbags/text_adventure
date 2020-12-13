@@ -228,6 +228,33 @@ public class GameMakerController
     }
 
     @FXML
+    private void propertiesPressed()
+    {
+        try
+        {
+            FXMLLoader loader=new FXMLLoader(getClass().getResource("/fxml/properties.fxml"));
+            Node node=loader.load();
+            PropertiesDialogController c=loader.getController();
+            Stage stage=new Stage(StageStyle.UTILITY);
+            stage.setTitle("Game properties");
+            Scene scene=new Scene((Parent) node);
+            stage.setScene(scene);
+            c.setStage(stage);
+            c.setGame(game);
+            stage.showAndWait();
+            if (c.ok())
+            {
+                game.setGameName(c.getGameName());
+                game.setStartScreen(c.getStartScreen());
+                game.setGameOverview(c.getGameDescription());
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     private void mouseEntered()
     {
         pane.requestFocus();
@@ -265,8 +292,6 @@ public class GameMakerController
                 addScreenLink(selected.getScreen(), link);
                 addDirectionForm(selected.getScreen(),link);
             }
-
-
         } catch (IOException e)
         {
             e.printStackTrace();
