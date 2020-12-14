@@ -29,7 +29,7 @@ public class ScreenSelectDialogController implements Initializable
 
     public void setGame(Game game)
     {
-        ObservableList<String> screens = FXCollections.observableArrayList( game.screens.keySet() );
+        ObservableList<String> screens = FXCollections.observableArrayList( game.getScreenMap().keySet() );
         listView.setItems( screens );
     }
 

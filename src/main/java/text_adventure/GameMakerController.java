@@ -55,7 +55,7 @@ public class GameMakerController
 
     private Game game;
     private HashMap<Screen,ScreenRect> rects = new HashMap<>();
-    private HashMap<ScreenLink,ScreenLinkLine> links = new HashMap<>();
+    private HashMap<Link, LinkLine> links = new HashMap<>();
 
     // Add a public no-args constructor
     public GameMakerController() { }
@@ -63,16 +63,18 @@ public class GameMakerController
     public void setGame(Game game)
     {
         this.game=game;
-        for (Screen screen : game.getScreens().values() )
+        for (Screen screen : game.getScreens())
             addScreen(screen);
         for (Node node : pane.getChildren())
         {
-            if (node instanceof ScreenLinkLine)
+            if (node instanceof LinkLine)
             {
-                ((ScreenLinkLine)node).setTo();
+                ((LinkLine)node).setTo();
             }
         }
     }
+
+    public Game getGame() { return this.game; }
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources)
@@ -93,7 +95,7 @@ public class GameMakerController
                     stage.showAndWait();
                     if (c.ok())
                     {
-                        Screen screen = new Screen(game,c.getName());
+                        Screen screen = new Screen(c.getName());
                         screen.setLocation(cursorRect.getLayoutX(), cursorRect.getLayoutY());
                         game.addScreen(screen);
                         addScreen(screen);
@@ -108,7 +110,7 @@ public class GameMakerController
             {
                 ScreenRect selected = getSelected();
                 pane.getChildren().remove(selected);
-                for (ScreenLink link : selected.getScreen().getLinks().values())
+                for (Link link : selected.getScreen().getLinks())
                     pane.getChildren().remove(links.get(link));
                 game.removeScreen(selected.getScreen());
                 keyEvent.consume();
@@ -129,11 +131,11 @@ public class GameMakerController
                 descriptionArea.setText(rect.descriptionProperty().getValue());
                 rect.descriptionProperty().bind(descriptionArea.textProperty());
                 directionBox.getChildren().clear();
-                for (ScreenLink link : screen.getLinks().values() )
+                for (Link link : screen.getLinks() )
                     addDirectionForm(screen,link);
 
                 itemsBox.getChildren().clear();
-                for (Item item : screen.getItems().values())
+                for (Item item : screen.getItems() )
                     addItemForm(screen,item);
 
                 actionsBox.getChildren().clear();
@@ -151,11 +153,11 @@ public class GameMakerController
         });
         selectOnly(rect);
         pane.getChildren().add(rect);
-        for (ScreenLink link : screen.getLinks().values())
-            addScreenLink(screen,link);
+        for (Link link : screen.getLinks())
+            addLink(screen,link);
     }
 
-    private void addDirectionForm(Screen screen, ScreenLink link)
+    private void addDirectionForm(Screen screen, Link link)
     {
         directionBox.getChildren().add(new DirectionForm(this,screen,link));
     }
@@ -165,7 +167,7 @@ public class GameMakerController
         directionBox.getChildren().remove(form);
     }
 
-    private void removeLink(Screen screen, ScreenLink link)
+    private void removeLink(Screen screen, Link link)
     {
         screen.removeLink(link);
         pane.getChildren().remove(links.get(link));
@@ -201,10 +203,10 @@ public class GameMakerController
         actionsBox.getChildren().remove(form);
     }
 
-    private void addScreenLink(Screen screen, ScreenLink link)
+    private void addLink(Screen screen, Link link)
     {
         ScreenRect rect = rects.get(screen);
-        ScreenLinkLine linkLine = new ScreenLinkLine(rect, link);
+        LinkLine linkLine = new LinkLine(this, rect, link);
         links.put(link, linkLine);
         pane.getChildren().add(linkLine);
         linkLine.toBack();
@@ -297,8 +299,8 @@ public class GameMakerController
             stage.showAndWait();
             if (c.ok())
             {
-                ScreenLink link = game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), c.getDirection(), "");
-                addScreenLink(selected.getScreen(), link);
+                Link link = game.link(selected.getScreen().getTitle(), c.getSelectedScreen(), c.getDirection(), "");
+                addLink(selected.getScreen(), link);
                 addDirectionForm(selected.getScreen(),link);
             }
         } catch (IOException e)
@@ -463,7 +465,7 @@ public class GameMakerController
 
     static class DirectionForm extends VBox
     {
-        public DirectionForm(GameMakerController controller, Screen screen, ScreenLink link)
+        public DirectionForm(GameMakerController controller, Screen screen, Link link)
         {
             getChildren().add(makeTextField("To",link.getScreen()));
             getChildren().add(makeTextField("Direction",link.getDirection(),(obs,ov,nv) -> link.setDirection(nv)));
@@ -566,13 +568,15 @@ public class GameMakerController
         return new HBox(label, field);
     }
 
-    class ScreenLinkLine extends CubicCurve
+    class LinkLine extends CubicCurve
     {
+        private GameMakerController controller;
         private ScreenRect from;
-        private ScreenLink link;
+        private Link link;
 
-        public ScreenLinkLine(ScreenRect from, ScreenLink link)
+        public LinkLine(GameMakerController controller, ScreenRect from, Link link)
         {
+            this.controller=controller;
             this.from=from;
             this.link=link;
             setStrokeWidth(2d);
@@ -591,7 +595,7 @@ public class GameMakerController
 
         public void setTo()
         {
-            Screen to = from.getScreen().getGame().getScreen(link.getScreen());
+            Screen to = controller.getGame().getScreen(link.getScreen());
             ScreenRect toRect=GameMakerController.this.rects.get(to);
 
             //TODO: listen to additions of screens to update this line where necessary

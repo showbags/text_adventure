@@ -17,14 +17,16 @@ public class Game
     //TODO: game saving and loading
 
     //game details
-    public Map<String,Screen> screens = new HashMap<>();
-
     private File file;
     private String startScreen, gameName, gameOverview;
+    private List<Screen> screens = new ArrayList<>();
 
     //game state
+    private List<Item> inventory=new ArrayList<>();
+
     private transient Screen currentScreen;
-    private transient Map<String, Item> inventory=new HashMap<>();
+    private transient Map<String,Screen> screenMap;
+    private transient Map<String,Item> inventoryMap;
 
     private static Set<String> words = new HashSet<>();
 
@@ -52,8 +54,6 @@ public class Game
         Game game = gson.fromJson(reader, Game.class);
         game.setFile(jsonFile);
         game.setCurrentScreenToStartScreen();
-        for (Screen screen : game.screens.values())
-            screen.register(game);
         return game;
     }
 
@@ -80,13 +80,67 @@ public class Game
         } while (!currentScreen.isGameComplete());
     }
 
-    public void addScreen(Screen screen) { screens.put(screen.getTitle(),screen); }
+    public void addScreen(Screen screen)
+    {
+        screens.add(screen);
+        invalidateScreens();
+    }
 
-    public void removeScreen(Screen screen) { screens.remove(screen.getTitle()); }
+    public Map<String,Screen> getScreenMap()
+    {
+        if (screenMap==null)
+        {
+            screenMap=new HashMap<>();
+            for (Screen screen : screens)
+                screenMap.put(screen.getTitle(), screen);
+        }
+        return screenMap;
+    }
+
+    public Screen getScreen(String title)
+    {
+        return getScreenMap().get(title);
+    }
+
+    private Map<String,Item> getInventoryMap()
+    {
+        if (inventoryMap==null)
+        {
+            inventoryMap=new HashMap<>();
+            for (Item item : inventory)
+                inventoryMap.put(item.getName(), item);
+        }
+        return inventoryMap;
+    }
+
+    public Item getInventoryItem(String item)
+    {
+        return getInventoryMap().get(item);
+    }
+
+    public void addInventoryItem(Item item)
+    {
+        invalidateInventory();
+        inventory.add(item);
+    }
+
+    public boolean hasInventoryItem(String item)
+    {
+        return getInventoryMap().containsKey(item);
+    }
+
+    private void invalidateScreens() { screenMap=null; }
+    private void invalidateInventory() { inventoryMap=null; }
+
+    public void removeScreen(Screen screen)
+    {
+        screens.remove(screen);
+        invalidateScreens();
+    }
 
     private void setCurrentScreenToStartScreen()
     {
-        setCurrentScreen(screens.get(startScreen));
+        setCurrentScreen(getScreen(startScreen));
     }
 
     private void setCurrentScreen(Screen screen)
@@ -94,11 +148,9 @@ public class Game
         this.currentScreen=screen;
     }
 
-    public void goTo(String screen) { setCurrentScreen(screens.get(screen)); }
+    public void goTo(String screen) { setCurrentScreen(getScreen(screen)); }
 
-    public Map<String,Screen> getScreens() { return this.screens; }
-
-    public Screen getScreen(String name) { return screens.get(name); }
+    public List<Screen> getScreens() { return this.screens; }
 
     private void handleInput()
     {
@@ -107,7 +159,7 @@ public class Game
         String input = in. nextLine();
         System.out.println();
         if (input.isBlank()) return;
-        if (currentScreen.handleInput(input))
+        if (currentScreen.handleInput(this,input))
             return;
         Matcher goMatcher=goPattern.matcher(input);
         if (goMatcher.matches())
@@ -188,7 +240,7 @@ public class Game
         else if (dir.matches("u(p)*"))
             dir="up";
 
-        ScreenLink link=currentScreen.getLink(dir);
+        Link link=currentScreen.getLink(dir);
         if (link==null)
         {
             error("You can't go that way");
@@ -212,7 +264,7 @@ public class Game
         String item=getMatcher.group(1);
         if (currentScreen.hasItem(item))
         {
-            inventory.put(item, currentScreen.removeItem(item));
+            addInventoryItem(currentScreen.removeItem(item));
             error("You get the "+item);
         } else
             error("There is no "+item+" to get");
@@ -220,19 +272,19 @@ public class Game
 
     private void handleLook(Matcher lookMatcher)
     {
-        String item=lookMatcher.group(1);
-        if (currentScreen.hasItem(item))
-            error("\n"+currentScreen.getItem(item).getDescription());
-        else if (inventory.containsKey(item))
-            error("\n"+inventory.get(item).getDescription());
+        String name=lookMatcher.group(1);
+        Item item = getInventoryItem(name);
+        if (item==null) item = currentScreen.getItem(name);
+        if (item!=null)
+            error("\n"+currentScreen.getItem(name).getDescription());
         else
-            error("There is no "+item+".");
+            error("There is no "+name+".");
     }
 
     private void inventory()
     {
         System.out.println("\nYou have the following items:\n");
-        for (Item item : inventory.values())
+        for (Item item : inventory)
             System.out.println(" * "+item);
         hold();
     }
@@ -313,26 +365,26 @@ public class Game
         System.out.flush();
     }
 
-    public ScreenLink link(String from, String to, String dir, String desc)
+    public Link link(String from, String to, String dir, String desc)
     {
         return link(from,to,dir,desc,true,"");
     }
 
-    public ScreenLink link(String from, String to, String dir, String desc, boolean can_pass, String cant_pass_message)
+    public Link link(String from, String to, String dir, String desc, boolean can_pass, String cant_pass_message)
     {
-        return screens.get(from).link(to,dir,desc,can_pass,cant_pass_message);
+        return getScreen(from).link(to,dir,desc,can_pass,cant_pass_message);
     }
 
     public static Game defaultGame()
     {
         Game game = new Game();
         game.setFile(new File("game.json"));
-        Screen s1 = new Screen(game, "Kitchen", "You are at kitchen of your home. There is a circular dining table in the center of the room.");
+        Screen s1 = new Screen("Kitchen", "You are at kitchen of your home. There is a circular dining table in the center of the room.");
         s1.setLocation(200, 200);
         s1.addItem("key", "On the table is a <>", "It's just a key");
         s1.addAction("unlock door( with)*( the)*( key)*",
                 """
-                        if (!game.inventory.containsKey("key"))
+                        if (!game.hasInventoryItem("key"))
                         game.error("You don't have a key");
                         else
                         {
@@ -343,11 +395,11 @@ public class Game
         );
         s1.addAction("make( a)* sandwich",
                 """
-                        if (!game.inventory.containsKey("bread"))
+                        if (!game.hasInventoryItem("bread"))
                         game.error("You need bread to make a sandwich");
-                        else if (!game.inventory.containsKey("vegemite"))
+                        else if (!game.hasInventoryItem("vegemite"))
                         game.error("Some vegemite would be nice");
-                        else if (!game.inventory.containsKey("knife"))
+                        else if (!game.hasInventoryItem("knife"))
                         game.error("How are you going to spread the vegemite with no knife?");
                         else
                         {
@@ -360,18 +412,18 @@ public class Game
                         """
         );
         game.addScreen(s1);
-        Screen s2 = new Screen(game, "Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
+        Screen s2 = new Screen("Backyard", "You are out the back of your house. On the grass you can see some garden tools.");
         s2.setLocation(100, 200);
         s2.addItem("knife", "Amongst the garden tools you can see a <>", "It looks like a pretty good sandwich making knife.");
         game.addScreen(s2);
-        Screen s3 = new Screen(game, "Laundry", "You are in the laundry of your house.");
+        Screen s3 = new Screen("Laundry", "You are in the laundry of your house.");
         s3.setLocation(200, 300);
         game.addScreen(s3);
-        Screen s4 = new Screen(game, "Pool area", "You are in the pool area. There is a lovely clear pool that looks nice for swimming in.");
+        Screen s4 = new Screen("Pool area", "You are in the pool area. There is a lovely clear pool that looks nice for swimming in.");
         s4.setLocation(200, 400);
         s4.addItem("note", "On the ground there is a <>", "The note says \"Go to the kitchen and make a sandwich to win the game\"");
         game.addScreen(s4);
-        Screen s5 = new Screen(game, "Pantry", "You are in the pantry.");
+        Screen s5 = new Screen("Pantry", "You are in the pantry.");
         s5.setLocation(200, 100);
         s5.addItem("vegemite", "There is a <> on the shelves", "Mmmm. That would be nice on some bread");
         s5.addItem("bread", "There is some <> in the bread box", "It is perfect bread for making sandwiches");
@@ -419,28 +471,25 @@ public class Game
 
 class Screen
 {
-    private transient Game game;
     private String title, description;
-    private Map<String, ScreenLink> links=new HashMap<>();
-    private Map<String, Item> items=new HashMap<>();
+    private List<Link> links=new ArrayList<>();
+    private List<Item> items=new ArrayList<>();
     private List<Action> actions=new ArrayList<>();
     private double x,y;
 
-    public Screen(Game game, String title)
+    private transient Map<String,Item> itemMap;
+    private transient Map<String, Link> linkMap;
+
+    public Screen(String title)
     {
-        this(game,title,"");
+        this(title,"");
     }
 
-    public Screen(Game game, String title, String description)
+    public Screen(String title, String description)
     {
-        register(game);
         this.title=title;
         this.description=description;
     }
-
-    public Game getGame() { return this.game; }
-
-    public void register(Game game) { this.game=game; }
 
     public double getX() { return this.x; }
     public double getY() { return this.y; }
@@ -454,20 +503,22 @@ class Screen
         setY(y);
     }
 
-    public ScreenLink link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
+    public Link link(String screen, String dir, String desc, boolean can_pass, String cant_pass_message)
     {
-        return addLink(new ScreenLink(screen, dir, desc, can_pass, cant_pass_message));
+        return addLink(new Link(screen, dir, desc, can_pass, cant_pass_message));
     }
 
-    public ScreenLink addLink(ScreenLink link)
+    public Link addLink(Link link)
     {
-        links.put(link.getDirection(), link);
+        invalidateLinks();
+        links.add(link);
         return link;
     }
     
-    public void removeLink(ScreenLink link)
+    public void removeLink(Link link)
     {
-        links.remove(link.getDirection());
+        invalidateLinks();
+        links.remove(link);
     }
 
     public String getTitle() { return this.title; }
@@ -476,26 +527,56 @@ class Screen
 
     public void setDescription(String description) { this.description=description; }
 
+    public Map<String,Item> getItemMap()
+    {
+        if (itemMap==null)
+        {
+            itemMap = new HashMap<>();
+            for (Item item : items)
+                itemMap.put(item.getName(),item);
+        }
+        return itemMap;
+    }
+
+    private void invalidateItems() { itemMap=null; }
+
+    public Map<String, Link> getLinkMap()
+    {
+        if (linkMap==null)
+        {
+            linkMap= new HashMap<>();
+            for (Link link : links)
+                linkMap.put(link.getDirection(),link);
+        }
+        return linkMap;
+    }
+
+    private void invalidateLinks() { linkMap=null; }
+
     public Item addItem(String name, String insitu, String description)
     {
+        invalidateItems();
         Item item = new Item(name, insitu, description);
-        items.put(name, item);
+        items.add(item);
         return item;
     }
 
     public boolean hasItem(String name)
     {
-        return items.containsKey(name);
+        return getItemMap().containsKey(name);
     }
 
     public Item getItem(String name)
     {
-        return items.get(name);
+        return getItemMap().get(name);
     }
 
     public Item removeItem(String name)
     {
-        return items.remove(name);
+        invalidateItems();
+        Item item = getItem(name);
+        items.remove(item);
+        return item;
     }
 
     public void removeAction(Action action)
@@ -503,14 +584,14 @@ class Screen
         actions.remove(action);
     }
 
-    public Map<String, ScreenLink> getLinks() { return links; }
+    public List<Link> getLinks() { return links; }
 
-    public ScreenLink getLink(String dir)
+    public Link getLink(String dir)
     {
-        return links.get(dir);
+        return getLinkMap().get(dir);
     }
 
-    public Map<String, Item> getItems() { return this.items; }
+    public List<Item> getItems() { return this.items; }
 
     public List<Action> getActions() { return this.actions; }
 
@@ -525,13 +606,13 @@ class Screen
     {
         System.out.println("\n \033[0;1m"+title+"\033[0m\n");
         System.out.print("  "+description+" ");
-        for (Item item : items.values()) System.out.print(item.describeInSitu()+". ");
-        for (ScreenLink link : links.values())
+        for (Item item : items) System.out.print(item.describeInSitu()+". ");
+        for (Link link : links)
             System.out.print(link.describe()+". ");
         System.out.println();
     }
 
-    public boolean handleInput(String input)
+    public boolean handleInput(Game game, String input)
     {
         for (Action action : actions)
         {
@@ -544,26 +625,21 @@ class Screen
                 binding.setVariable("screen", this);
                 GroovyShell shell=new GroovyShell(binding);
                 shell.evaluate(groovy);
-                game.hold();
                 return true;
             }
         }
         return false;
-
     }
 
-    public boolean isGameComplete()
-    {
-        return false;
-    }
+    public boolean isGameComplete() { return false; }
 }
 
-class ScreenLink
+class Link
 {
     private String screen, direction, description, cant_pass_message;
     private boolean can_pass;
 
-    public ScreenLink(String screen, String direction, String description, boolean can_pass, String cant_pass_message)
+    public Link(String screen, String direction, String description, boolean can_pass, String cant_pass_message)
     {
         this.screen=screen;
         this.direction=direction;
