@@ -5,8 +5,12 @@ import com.google.gson.GsonBuilder;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -293,8 +297,6 @@ public class Game
     {
         clear();
         gameOverview();
-        System.out.println();
-        generalHelp();
         hold();
     }
 
@@ -471,7 +473,7 @@ public class Game
 
 class Screen
 {
-    private String title, description;
+    private String title, description, imageName;
     private List<Link> links=new ArrayList<>();
     private List<Item> items=new ArrayList<>();
     private List<Action> actions=new ArrayList<>();
@@ -479,6 +481,7 @@ class Screen
 
     private transient Map<String,Item> itemMap;
     private transient Map<String, Link> linkMap;
+    private transient BufferedImage image;
 
     public Screen(String title)
     {
@@ -526,6 +529,10 @@ class Screen
     public String getDescription() { return this.description; }
 
     public void setDescription(String description) { this.description=description; }
+
+    public String getImageName() { return this.imageName; }
+
+    public void setImageName(String imageName) { this.imageName = imageName; }
 
     public Map<String,Item> getItemMap()
     {
@@ -610,6 +617,29 @@ class Screen
         for (Link link : links)
             System.out.print(link.describe()+". ");
         System.out.println();
+        if (image==null&&imageName!=null)
+        {
+            try
+            {
+                image = ImageIO.read(getClass().getResource("/images/"+imageName));
+                /*BufferedImage imageInit = ImageIO.read(getClass().getResource("/images/"+imageName));
+                int newH=100;
+                int newW=100;
+                Image tmp = imageInit.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+                image = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+                Graphics2D g2d = image.createGraphics();
+                g2d.drawImage(tmp, 0, 0, null);
+                g2d.dispose();*/
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        if (image!=null)
+        {
+            System.out.println(AsciiArt.convert(image));
+        }
     }
 
     public boolean handleInput(Game game, String input)

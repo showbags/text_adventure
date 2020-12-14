@@ -45,6 +45,9 @@ public class GameMakerController
     private TextArea descriptionArea;
 
     @FXML
+    private TextField imageField;
+
+    @FXML
     private VBox directionBox;
 
     @FXML
@@ -130,6 +133,8 @@ public class GameMakerController
                 rect.titleProperty().bind(titleField.textProperty());
                 descriptionArea.setText(rect.descriptionProperty().getValue());
                 rect.descriptionProperty().bind(descriptionArea.textProperty());
+                imageField.setText(rect.getScreen().getImageName());
+                rect.imageProperty().bind(imageField.textProperty());
                 directionBox.getChildren().clear();
                 for (Link link : screen.getLinks() )
                     addDirectionForm(screen,link);
@@ -146,6 +151,7 @@ public class GameMakerController
             {
                 rect.titleProperty().unbind();
                 rect.descriptionProperty().unbind();
+                rect.imageProperty().unbind();
                 List<Node> list = directionBox.getChildren();
                 if (!list.isEmpty())
                     list.subList(0, list.size()-1).clear();//leave item 0. It is the + button
@@ -369,7 +375,7 @@ public class GameMakerController
     {
         private Screen screen;
         private BooleanProperty selected = new SimpleBooleanProperty();
-        private StringProperty titleProperty, descriptionProperty;
+        private StringProperty titleProperty, descriptionProperty, imageProperty;
 
         public ScreenRect(Screen screen)
         {
@@ -382,6 +388,8 @@ public class GameMakerController
             titleProperty = new SimpleStringProperty(screen.getTitle());
             descriptionProperty = new SimpleStringProperty(screen.getDescription());
             descriptionProperty.addListener( (obs,ov,nv) -> screen.setDescription(nv));
+            imageProperty = new SimpleStringProperty(screen.getImageName());
+            imageProperty.addListener( (obs,ov,nv) -> screen.setImageName(nv));
 
             Label label = new Label();
             label.textProperty().bind(titleProperty);
@@ -416,6 +424,8 @@ public class GameMakerController
         public StringProperty titleProperty() { return titleProperty; }
 
         public StringProperty descriptionProperty() { return descriptionProperty; }
+
+        public StringProperty imageProperty() { return imageProperty; }
 
         public String selectedBorder = "-fx-border-color: blue;";
         public String focusedBorder = "-fx-border-color: black;";
