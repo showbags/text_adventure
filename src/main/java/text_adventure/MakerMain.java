@@ -1,7 +1,5 @@
 package text_adventure;
 
-import javafx.application.Application;
-
 public class MakerMain
 {
     public static void main(String[] args)

@@ -138,7 +138,7 @@ public class GameMakerController
 
                 actionsBox.getChildren().clear();
                 for (Action action : screen.getActions())
-                    addActionForm(screen,action);
+                    addActionForm(screen, action);
             }
             else
             {
@@ -379,6 +379,8 @@ public class GameMakerController
             this.screen=screen;
             titleProperty = new SimpleStringProperty(screen.getTitle());
             descriptionProperty = new SimpleStringProperty(screen.getDescription());
+            descriptionProperty.addListener( (obs,ov,nv) -> screen.setDescription(nv));
+
             Label label = new Label();
             label.textProperty().bind(titleProperty);
             label.setFont(Font.font("Arial", 8));

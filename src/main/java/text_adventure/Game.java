@@ -94,6 +94,8 @@ public class Game
         this.currentScreen=screen;
     }
 
+    public void goTo(String screen) { setCurrentScreen(screens.get(screen)); }
+
     public Map<String,Screen> getScreens() { return this.screens; }
 
     public Screen getScreen(String name) { return screens.get(name); }
@@ -135,6 +137,20 @@ public class Game
             endGame();
             return;
         }
+        if (input.equals("save"))
+        {
+            try
+            {
+                startScreen=currentScreen.getTitle();
+                File file = new File("save.json");
+                write(file);
+                error("Game saved as: "+file);
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            return;
+        }
         if (input.equals("help"))
         {
             overviewAndHelp();
@@ -167,6 +183,10 @@ public class Game
             dir="east";
         else if (dir.matches("w(est)*"))
             dir="west";
+        else if (dir.matches("d(own)*"))
+            dir="down";
+        else if (dir.matches("u(p)*"))
+            dir="up";
 
         ScreenLink link=currentScreen.getLink(dir);
         if (link==null)
@@ -183,7 +203,7 @@ public class Game
         return getScreen(link.getScreen());
     }
 
-    private static Pattern goPattern=Pattern.compile("(?:go )*(north|south|east|west|[nsew])");
+    private static Pattern goPattern=Pattern.compile("(?:go )*(north|south|east|west|up|down|[nsewud])");
     private static Pattern getPattern=Pattern.compile("(?:get|pick up|take) (.+)");
     private static Pattern lookPattern=Pattern.compile("(?:look at|look|examine|read) (.+)");
 
@@ -447,12 +467,14 @@ class Screen
     
     public void removeLink(ScreenLink link)
     {
-        links.remove(game.getScreen(link.getScreen()).getTitle());
+        links.remove(link.getDirection());
     }
 
     public String getTitle() { return this.title; }
 
     public String getDescription() { return this.description; }
+
+    public void setDescription(String description) { this.description=description; }
 
     public Item addItem(String name, String insitu, String description)
     {
@@ -501,8 +523,8 @@ class Screen
 
     public void display()
     {
-        System.out.println("\033[0;1m"+title+"\033[0m\n");
-        System.out.print(description+" ");
+        System.out.println("\n \033[0;1m"+title+"\033[0m\n");
+        System.out.print("  "+description+" ");
         for (Item item : items.values()) System.out.print(item.describeInSitu()+". ");
         for (ScreenLink link : links.values())
             System.out.print(link.describe()+". ");
@@ -569,7 +591,10 @@ class ScreenLink
 
     public String describe()
     {
-        return description.replaceAll("<>",direction);
+        if (description.isBlank())
+            return "You can go "+direction;
+        else
+            return description.replaceAll("<>",direction);
     }
 }
 
