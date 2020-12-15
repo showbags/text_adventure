@@ -139,12 +139,17 @@
           "screen": "Bridge east",
           "direction": "east",
           "description": "Somebody has made a bridge accross the river using planks of wood and rope. That was some time ago though and it looks a little bit dangerous.",
-          "cant_pass_message": "",
-          "can_pass": true
+          "cant_pass_message": "You\u0027ve taken some risks in your time but walking over that rickety bridge would be bridge too far! The timbers are rotten and the ropes are frayed.",
+          "can_pass": false
         }
       ],
       "items": [],
-      "actions": [],
+      "actions": [
+        {
+          "regex": "(mend|fix)\\s*bridge\\s*(with|using)*\\s*(rope|and|wood|timber|planks)*",
+          "script": "if (!game.hasInventoryItems(\"planks\",\"rope\"))\n{\ngame.error(\"It\u0027s a good to fix this bridge. You have a feeling that there are interesting things on the other side. However, you\u0027re going to need some planks and some rope to do that.\")\n}\nelse\n{\ndef link \u003d screen.getLink(\"east\")\nlink.setCanPass(true);\nlink.setDescription(\"To the \u003c\u003e is the bride that you mended\")\ngame.loseItem(\"planks\")\ngame.loseItem(\"rope\")\ngame.error(\"Well that was clever of you. You replace the rotten planks of the bridge with the good ones that you were carrying and the frayed rope with the sturdy rope that you found. It looks strong enough to cross now\")\n}"
+        }
+      ],
       "x": 498.0,
       "y": 370.0
     },
@@ -191,7 +196,18 @@
           "can_pass": true
         }
       ],
-      "items": [],
+      "items": [
+        {
+          "name": "rope",
+          "description": "It looks like very sturdy rope",
+          "insitu": "Many of the items are damaged but you do see some sturdy \u003c\u003e"
+        },
+        {
+          "name": "planks",
+          "description": "No sign of rot in these planks",
+          "insitu": "Some of the decks broken \u003c\u003e look loose enough to take"
+        }
+      ],
       "actions": [
         {
           "regex": "swim( to)*( the)*( island| land)*",

@@ -6,6 +6,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
@@ -127,9 +128,24 @@ public class Game
         inventory.add(item);
     }
 
+    public void loseItem(String item)
+    {
+        invalidateInventory();
+        inventory.remove(getInventoryMap().get(item));
+    }
+
     public boolean hasInventoryItem(String item)
     {
         return getInventoryMap().containsKey(item);
+    }
+
+    public boolean hasInventoryItems(String... items)
+    {
+        for (String item : items)
+        {
+            if (!hasInventoryItem(item)) return false;
+        }
+        return true;
     }
 
     private void invalidateScreens() { screenMap=null; }
@@ -622,8 +638,8 @@ class Screen
             {
                 image = ImageIO.read(getClass().getResource("/images/"+imageName));
                 /*BufferedImage imageInit = ImageIO.read(getClass().getResource("/images/"+imageName));
-                int newH=100;
-                int newW=100;
+                int newH=40;
+                int newW=140;
                 Image tmp = imageInit.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
                 image = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
 
