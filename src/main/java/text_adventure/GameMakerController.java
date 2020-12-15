@@ -483,9 +483,11 @@ public class GameMakerController
 
             CheckBox cb = new CheckBox("Can pass");
             cb.setSelected(link.canPass());
+            cb.selectedProperty().addListener( (obs,ov,nv) -> link.setCanPass(nv) );
             cb.setMinWidth(100);
-            TextField tb = new TextField(link.cantPassMessage());
+            TextField tb = new TextField(link.getCantPassMessage());
             tb.disableProperty().bind(cb.selectedProperty());
+            tb.textProperty().addListener( (obs,ov,nv) -> link.setCantPassMessage(nv) );
             HBox.setHgrow(tb, Priority.ALWAYS);
             getChildren().add(new HBox(cb, tb));
 
@@ -570,6 +572,7 @@ public class GameMakerController
         Label label = new Label(name);
         label.setMinWidth(100);
         TextArea field = new TextArea(text);
+        field.setWrapText(true);
         if (listener!=null)
             field.textProperty().addListener(listener);
         else

@@ -84,7 +84,12 @@
         }
       ],
       "items": [],
-      "actions": [],
+      "actions": [
+        {
+          "regex": "(go )*(for )*(a )*(swim|swimming)",
+          "script": "game.error(\"You wade into the beautiful clear water and feel instantly refreshed. As several dorsal fins begin to circle around you it seems that having a quick dip while there was work to be done wasn\u0027t such a good idea. On the up side you have provided a meal to some hungry sharks. On the down side you are unable to complete the game with no arms legs or head.\")\ngame.endGame()"
+        }
+      ],
       "x": 162.0,
       "y": 315.0
     },
@@ -96,9 +101,9 @@
         {
           "screen": "Bridge west",
           "direction": "east",
-          "description": "You notice that on the trail to the \u003c\u003e is rather scary looking bear.",
-          "cant_pass_message": "",
-          "can_pass": true
+          "description": "You notice that on the trail to the \u003c\u003e is rather scary looking bear",
+          "cant_pass_message": "Let\u0027s not go that way",
+          "can_pass": false
         },
         {
           "screen": "Green grove",
@@ -109,7 +114,12 @@
         }
       ],
       "items": [],
-      "actions": [],
+      "actions": [
+        {
+          "regex": "(throw|give|feed) (fish)* (to)* bear",
+          "script": "if (!game.hasInventoryItem(\"fish\"))\n{\ngame.error(\"Yes, bears like fish! But where to get some?\")\n}\nelse\n{\ndef link \u003d screen.getLink(\"east\")\nlink.setCanPass(true);\ndef description \u003d link.getDescription()\nlink.setDescription(description.replaceAll(\"scary\",\"friendly\"))\ngame.error(\u0027You throw the fish to the bear who gobbles it up. It seems you have made a friend\u0027)\n}"
+        }
+      ],
       "x": 342.0,
       "y": 373.0
     },
@@ -253,7 +263,7 @@
     },
     {
       "title": "Little bay",
-      "description": "You have come to a little bay. The water is calm and protected from the surrounding seas. Looking into the water you can see schools of fish swimming around.",
+      "description": "You have come to a little bay. The water is calm and protected from the surrounding seas.",
       "imageName": "",
       "links": [
         {
@@ -264,11 +274,17 @@
           "can_pass": true
         }
       ],
-      "items": [],
+      "items": [
+        {
+          "name": "fish",
+          "description": "What a tasty looking fish",
+          "insitu": "Looking into the water you can see a schools of good sized fish swimming around."
+        }
+      ],
       "actions": [
         {
-          "regex": "swim (to )*(shipwreck|boat)*",
-          "script": "game.goTo(\"Shipwreck\")\ngame.error(\"You dive into the water and swim to the shipwreck\")\n"
+          "regex": "catch fish\\s*(with|using)*\\s*(net)*",
+          "script": "if (game.hasInventoryItem(\"net\"))\n{\n    game.addInventoryItem(game.currentScreen.removeItem(\"fish\"))\n    game.error(\"You expertly fling the net onto the surface of the water and it surrounds the school of fish. Several get away but you manage to catch one of the slippery suckers\")\n}\nelse\n{\n    game.error(\"You splash around in the water trying to catch the fish with your bear hands. After a while you give up. \\\"What am I? A bear?\\\" If only you had something to catch them with ...\")\n}"
         }
       ],
       "x": 313.0,

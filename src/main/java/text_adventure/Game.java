@@ -6,7 +6,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
@@ -252,7 +251,7 @@ public class Game
         }
         if (!link.canPass())
         {
-            error(link.cantPassMessage());
+            error(link.getCantPassMessage());
             return currentScreen;
         }
 
@@ -682,10 +681,11 @@ class Link
 
     public boolean canPass() { return can_pass; }
 
-    @SuppressWarnings("unused")
     public void setCanPass(boolean can_pass) { this.can_pass=can_pass; }
 
-    public String cantPassMessage() { return cant_pass_message; }
+    public String getCantPassMessage() { return cant_pass_message; }
+
+    public void setCantPassMessage(String cant_pass_message) { this.cant_pass_message=cant_pass_message; }
 
     public String getDirection() { return this.direction; }
 
