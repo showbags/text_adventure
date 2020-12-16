@@ -320,6 +320,28 @@ public class Game
         System.out.println(gameOverview);
     }
 
+    public static void println(String string)
+    {
+        System.out.println(append(new StringBuilder(), string));
+    }
+
+    public static void printlnBold(String string)
+    {
+        println("\033[0;1m"+string+"\033[0m");
+    }
+
+    public static StringBuilder append(StringBuilder sb, String string)
+    {
+        int limit=80;
+        String[] words = string.split("\\s+");
+        for (String word : words)
+        {
+            String ws = sb.length()+word.length()+1<limit ? " " : "\n";
+            sb.append(ws).append(word);
+        }
+        return sb;
+    }
+
     private void generalHelp()
     {
         System.out.printf(
@@ -626,11 +648,11 @@ class Screen
 
     public void display()
     {
-        System.out.println("\n \033[0;1m"+title+"\033[0m\n");
-        System.out.print("  "+description+" ");
-        for (Item item : items) System.out.print(item.describeInSitu()+". ");
+        Game.printlnBold("\n "+title+"\n");
+        StringBuilder sb = Game.append(new StringBuilder(),"  "+description+" ");
+        for (Item item : items) Game.append(sb,item.describeInSitu()+". ");
         for (Link link : links)
-            System.out.print(link.describe()+". ");
+            Game.append(sb,link.describe()+". ");
         System.out.println();
         if (image==null&&imageName!=null)
         {
