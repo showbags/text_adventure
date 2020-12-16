@@ -319,7 +319,16 @@ public class Game
 
     public static void println(String string)
     {
-        System.out.println(append(new StringBuilder(), string));
+        int limit=100;
+        String[] words = string.split(" ");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words)
+        {
+            int ceil = (sb.length()/limit+1)*limit;
+            String ws = sb.length()+word.length()<ceil ? " " : "\n";
+            sb.append(ws).append(word);
+        }
+        System.out.println(sb);
     }
 
     public static void printlnBold(String string)
@@ -327,21 +336,9 @@ public class Game
         println("\033[0;1m"+string+"\033[0m");
     }
 
-    public static StringBuilder append(StringBuilder sb, String string)
-    {
-        int limit=80;
-        String[] words = string.split("\\s+");
-        for (String word : words)
-        {
-            String ws = sb.length()+word.length()+1<limit ? " " : "\n";
-            sb.append(ws).append(word);
-        }
-        return sb;
-    }
-
     private void generalHelp()
     {
-        System.out.printf(
+        println(String.format(
                 """
     %s  is a text adventure game. It consists of many different locations each of which contains a description of the scenery and objects 
     within it. You can move between locations by observing the directions that are available to you. You will find you way through the
@@ -367,7 +364,7 @@ public class Game
      > help               - show this screen
      
      Good luck!!
-    """,gameName);
+    """,gameName));
     }
 
     private boolean spellCheck(String input)
@@ -439,10 +436,10 @@ public class Game
                         game.error("How are you going to spread the vegemite with no knife?");
                         else
                         {
-                        System.out.println("You make a sandwich and win the game!!!!");
-                        System.out.println("");
-                        System.out.println(" ------------  CONGRATULATIONS!!!  ------------");
-                        System.out.println("");
+                        Game.println("You make a sandwich and win the game!!!!");
+                        Game.println("");
+                        Game.println(" ------------  CONGRATULATIONS!!!  ------------");
+                        Game.println("");
                         game.endGame();
                         }
                         """
@@ -646,24 +643,30 @@ class Screen
     public void display()
     {
         Game.printlnBold("\n "+title+"\n");
-        StringBuilder sb = Game.append(new StringBuilder(),"  "+description+" ");
-        for (Item item : items) Game.append(sb,item.describeInSitu()+". ");
+        StringBuilder sb = new StringBuilder();
+        sb.append("  "+description+" ");
+        for (Item item : items) sb.append(item.describeInSitu()).append(". ");
         for (Link link : links)
-            Game.append(sb,link.describe()+". ");
-        System.out.println();
+            sb.append(link.describe()).append(". ");
+        sb.append("\n");
+        Game.println(sb.toString());
 
         try
         {
             ClassLoader classloader = Thread.currentThread().getContextClassLoader();
             InputStream is = classloader.getResourceAsStream("asciiart/"+imageName);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String line;
-            System.out.println("\n\n");
-            while ( (line=reader.readLine())!=null ) {
-                System.out.println("      "+line);
+            if (is!=null)
+            {
+                BufferedReader reader=new BufferedReader(new InputStreamReader(is));
+                String line;
+                System.out.println("\n\n");
+                while ((line=reader.readLine())!=null)
+                {
+                    System.out.println("      "+line);
+                }
+                System.out.println();
+                reader.close();
             }
-            System.out.println();
-            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

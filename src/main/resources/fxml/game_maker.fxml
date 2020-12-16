@@ -44,7 +44,7 @@
         <items>
             <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS" pannable="true" vbarPolicy="ALWAYS">
                <content>
-                  <AnchorPane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#mouseClicked" onMouseEntered="#mouseEntered" prefHeight="800.0" prefWidth="1000.0" style="-fx-border-color: orange; -fx-border-width: 3;">
+                  <AnchorPane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#mouseClicked" onMouseEntered="#mouseEntered" prefHeight="2000.0" prefWidth="2000.0" style="-fx-border-color: orange; -fx-border-width: 3;">
                      <padding>
                         <Insets bottom="100.0" left="100.0" right="100.0" top="100.0" />
                      </padding>

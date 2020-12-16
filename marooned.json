@@ -120,8 +120,8 @@
           "script": "if (!game.hasInventoryItem(\"fish\"))\n{\ngame.error(\"Yes, bears like fish! But where to get some?\")\n}\nelse\n{\ndef link \u003d screen.getLink(\"east\")\nlink.setCanPass(true);\ndef description \u003d link.getDescription()\nlink.setDescription(description.replaceAll(\"scary\",\"friendly\"))\ngame.error(\u0027You throw the fish to the bear who gobbles it up. It seems you have made a friend\u0027)\n}"
         }
       ],
-      "x": 342.0,
-      "y": 373.0
+      "x": 336.0,
+      "y": 394.0
     },
     {
       "title": "Bridge west",
@@ -150,8 +150,8 @@
           "script": "if (!game.hasInventoryItems(\"planks\",\"rope\"))\n{\ngame.error(\"It\u0027s a good to fix this bridge. You have a feeling that there are interesting things on the other side. However, you\u0027re going to need some planks and some rope to do that.\")\n}\nelse\n{\ndef link \u003d screen.getLink(\"east\")\nlink.setCanPass(true);\nlink.setDescription(\"To the \u003c\u003e is the bride that you mended\")\ngame.loseItem(\"planks\")\ngame.loseItem(\"rope\")\ngame.error(\"Well that was clever of you. You replace the rotten planks of the bridge with the good ones that you were carrying and the frayed rope with the sturdy rope that you found. It looks strong enough to cross now\")\n}"
         }
       ],
-      "x": 498.0,
-      "y": 370.0
+      "x": 471.0,
+      "y": 428.0
     },
     {
       "title": "Southern tip",
@@ -274,8 +274,8 @@
       ],
       "items": [],
       "actions": [],
-      "x": 628.0,
-      "y": 376.0
+      "x": 598.0,
+      "y": 448.0
     },
     {
       "title": "Little bay",
@@ -285,6 +285,13 @@
         {
           "screen": "Green grove",
           "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Rocky trail",
+          "direction": "east",
           "description": "",
           "cant_pass_message": "",
           "can_pass": true
@@ -305,6 +312,379 @@
       ],
       "x": 313.0,
       "y": 73.0
+    },
+    {
+      "title": "Rocky trail",
+      "description": "You are on a rocky trail.",
+      "links": [
+        {
+          "screen": "Little bay",
+          "direction": "west",
+          "description": "To the \u003c\u003e is a charming little bay",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Foothills",
+          "direction": "east",
+          "description": "The path continues to the \u003c\u003e towards the hills",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [
+        {
+          "name": "branch",
+          "description": "It is a sturdy branch about 1m long",
+          "insitu": "Although there are less trees around here there is large on next to the trail that has dropped a \u003c\u003e"
+        }
+      ],
+      "actions": [],
+      "x": 442.0,
+      "y": 122.0
+    },
+    {
+      "title": "Foothills",
+      "description": "You are at the base of some quite high hills. Climbing does not seem to be an option.",
+      "links": [
+        {
+          "screen": "Rocky trail",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave1(Cave)",
+          "direction": "east",
+          "description": "After investigating you see that there is a small cave entrance to the \u003c\u003e",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 560.0,
+      "y": 80.0
+    },
+    {
+      "title": "cave1(Cave)",
+      "description": "You are inside a cave. There is very little day light coming in from the outside and yet you can see all around you. This is because a large population of glow worms live on the roof of this cave and have created a pool of glowing glow worm poo.",
+      "links": [
+        {
+          "screen": "Foothills",
+          "direction": "west",
+          "description": "You can exit the cave to the \u003c\u003e",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave2(Cave)",
+          "direction": "east",
+          "description": "The cave goes deeper to the \u003c\u003e",
+          "cant_pass_message": "It\u0027s too dark to go that way",
+          "can_pass": false
+        }
+      ],
+      "items": [],
+      "actions": [
+        {
+          "regex": "(dip|put|soak)*\\s*(branch|log|stick)*\\s*(in|into)*\\s*(pool|poo|glow worm poo)",
+          "script": "if (!game.hasInventoryItem(\"branch\"))\n{\ngame.error(\"Didn\u0027t we see a branch back there? Why don\u0027t you go and pick it up\")\n}\nelse\n{\ndef link \u003d screen.getLink(\"east\")\nlink.setCanPass(true);\ngame.error(\"Eeew! You carefully dip the branch into the pool of glow worm droppings. It is now covered with the sticky glowing muck. But .... you now have enough light to see all around you!\")\n}"
+        }
+      ],
+      "x": 674.0,
+      "y": 77.0
+    },
+    {
+      "title": "cave2(Cave)",
+      "description": "You are in the cave.",
+      "links": [
+        {
+          "screen": "cave1(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave4(Cave)",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 800.0,
+      "y": 80.0
+    },
+    {
+      "title": "cave3(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave4(Cave)",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 708.0,
+      "y": 166.0
+    },
+    {
+      "title": "cave4(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave2(Cave)",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave3(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave8(Cave)",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 800.0,
+      "y": 168.0
+    },
+    {
+      "title": "cave5(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave6(Cave)",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave9(Cave)",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 895.0,
+      "y": 167.0
+    },
+    {
+      "title": "cave6(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave5(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 985.0,
+      "y": 167.0
+    },
+    {
+      "title": "cave7(Cave)",
+      "description": "",
+      "links": [],
+      "items": [],
+      "actions": [],
+      "x": 708.0,
+      "y": 258.0
+    },
+    {
+      "title": "cave8(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave4(Cave)",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave12(Cave)",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 801.0,
+      "y": 258.0
+    },
+    {
+      "title": "cave9(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave10(Cave)",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave5(Cave)",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave13(Cave)",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 896.0,
+      "y": 256.0
+    },
+    {
+      "title": "cave10(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave14(Cave)",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave9(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 986.0,
+      "y": 255.0
+    },
+    {
+      "title": "cave11(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave12(Cave)",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 712.0,
+      "y": 345.0
+    },
+    {
+      "title": "cave12(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave13(Cave)",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave11(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave8(Cave)",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 799.0,
+      "y": 349.0
+    },
+    {
+      "title": "cave13(Cave)",
+      "description": "Wait a second ... nope you are still in the cave",
+      "links": [
+        {
+          "screen": "cave9(Cave)",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "cave12(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 892.0,
+      "y": 345.0
+    },
+    {
+      "title": "cave14(Cave)",
+      "description": "You are still in the cave",
+      "links": [
+        {
+          "screen": "cave10(Cave)",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 987.0,
+      "y": 344.0
     }
   ],
   "inventory": []
