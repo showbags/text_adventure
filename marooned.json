@@ -9,7 +9,7 @@
     {
       "title": "The beach",
       "description": "You are standing on a white sandy beach. All around you are pieces of driftwood that have washed onto the sand during a recent storm. Out to sea you can see the sails of your ship where your crew are waiting for you signal.",
-      "imageName": "",
+      "imageName": "pirate_ship.txt",
       "links": [
         {
           "screen": "Green grove",

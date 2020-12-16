@@ -5,12 +5,9 @@ import com.google.gson.GsonBuilder;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -654,28 +651,21 @@ class Screen
         for (Link link : links)
             Game.append(sb,link.describe()+". ");
         System.out.println();
-        if (image==null&&imageName!=null)
-        {
-            try
-            {
-                image = ImageIO.read(getClass().getResource("/images/"+imageName));
-                /*BufferedImage imageInit = ImageIO.read(getClass().getResource("/images/"+imageName));
-                int newH=40;
-                int newW=140;
-                Image tmp = imageInit.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-                image = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
 
-                Graphics2D g2d = image.createGraphics();
-                g2d.drawImage(tmp, 0, 0, null);
-                g2d.dispose();*/
-            } catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        if (image!=null)
+        try
         {
-            System.out.println(AsciiArt.convert(image));
+            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+            InputStream is = classloader.getResourceAsStream("asciiart/"+imageName);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            System.out.println("\n\n");
+            while ( (line=reader.readLine())!=null ) {
+                System.out.println("      "+line);
+            }
+            System.out.println();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
