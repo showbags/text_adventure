@@ -23,6 +23,7 @@ public class Game
 
     //game state
     private List<Item> inventory=new ArrayList<>();
+    private Map<String,String> properties=new HashMap<>();
 
     private transient Screen currentScreen;
     private transient Map<String,Screen> screenMap;
@@ -122,6 +123,22 @@ public class Game
     {
         invalidateInventory();
         inventory.add(item);
+    }
+
+    public void setProperty(String key, String value) { properties.put(key,value); }
+
+    public String getProperty(String key) { return properties.get(key); }
+
+    public boolean hasProperty(String key) { return properties.containsKey(key); }
+
+    public boolean hasProperties(String... keys)
+    {
+        for (String key : keys)
+        {
+            if (!hasProperty(key))
+                return false;
+        }
+        return true;
     }
 
     @SuppressWarnings("unused")
@@ -688,13 +705,16 @@ class Screen
     {
         for (Action action : actions)
         {
-            String regex=action.getRegex();
-            if (input.matches(regex))
+            Pattern regex=Pattern.compile(action.getRegex());
+            Matcher matcher=regex.matcher(input);
+            if (matcher.matches())
             {
                 String groovy=action.getScript();
                 Binding binding=new Binding();
                 binding.setVariable("game", game);
                 binding.setVariable("screen", this);
+                if (matcher.groupCount()>1)
+                    binding.setVariable("match", matcher.group(1));
                 GroovyShell shell=new GroovyShell(binding);
                 shell.evaluate(groovy);
                 return true;

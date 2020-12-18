@@ -31,10 +31,26 @@
           "description": "",
           "cant_pass_message": "",
           "can_pass": true
+        },
+        {
+          "screen": "Treehouse",
+          "direction": "down",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
         }
       ],
       "items": [],
-      "actions": [],
+      "actions": [
+        {
+          "regex": "make( a)* fire",
+          "script": "if (!game.hasInventoryItem(\"treasure chest\"))\n{\ngame.error(\"If you\u0027re thinking of making a fire don\u0027t you think you\u0027d better wait until you\u0027ve found the treasure?\")\n}\nelse\n{\ngame.error(\"You collect a large pile of driftwood and arrange it into a fire so that you can signal to your ship.\")\ngame.setProperty(\"fire\",\"true\")\n}"
+        },
+        {
+          "regex": "light( the)* fire( with| using)*( the)* flint",
+          "script": "if (game.hasInventoryItem(\"treasure chest\"))\n{\ngame.error(\"I don\u0027t think it\u0027s a good idea to signal to your mates without the treasure chest\")\n}\nelse\n{\ngame.error(\"You light the fire. The ship comes to get you. All good. The end\")\ngame.endGame()\n}\n"
+        }
+      ],
       "x": 158.0,
       "y": 197.0
     },
@@ -66,7 +82,20 @@
         }
       ],
       "items": [],
-      "actions": [],
+      "actions": [
+        {
+          "regex": "(look at|look|examine|read) (statue)",
+          "script": "game.error(\"It is an eerie looking statue for sure. Most suprisingly is that in place of the eyes and nose are holes that go all of the way through the stone. You can\u0027t help but feel as though it was made that way as some kind of a sign ...\")"
+        },
+        {
+          "regex": "(?:place|put|use) (sapphire|emerald|ruby) in (the )*(holes|hole|statue)",
+          "script": "if (!game.hasInventoryItem(match))\n{\n    game.error(\"What ${match}? You don\u0027t have one\")\n    return\n}\nelse\n{\n    def loc \u003d match\u003d\u003d\"emerald\"?\"left eye socket\":match\u003d\u003d\"sapphire\"?\"right eye socket\":\"nose hole\"\n    game.error(\"You place the ${match} into the ${loc} of the statue. It seems to fit\")\n    game.setProperty(\"done_${match}\",\"true\")\n}\nif (game.hasProperties(\"sapphire\",\"emerald\",\"ruby\"))\n{\n    game.error(\u0027After placing the final gem in the statue you expect something magical to happen. \u0027 +\n            \u0027But it doesn\\\u0027t. So you wait. And nothing happens. After all of this adventure you really thought that\u0027 +\n            \u0027 this was leading somwhere. But it wasn\\\u0027t. You are feeling quite weary and disappointed so you sit on the ground to rest. After some time you realise that the sun is beginning to set and has is casting bright light into the little grove. \u0027 +\n            \u0027That\\\u0027s when you notice that the sunlight is shining through the gems in the statue and has focused the coloured light onto \u0027 +\n            \u0027the ground in the shape of an \"X\" !!\u0027)\n}\n"
+        },
+        {
+          "regex": "dig",
+          "script": "import text_adventure.Item\n\ngame.error(\u0027Everyone knows that Xs mean treasure! Even though your energy is fading you dig with all that you can muster. That pick really is coming in handy. It doesn\\\u0027t\u0027 +\n        \u0027 take long until you have dug down about 1 metre. Then the pick strikes something hollow sounding. Scraping the loose soil away with your hands you can see clearly now that it is a treasure chest! You manage to get it out of the hole and are now carrying it\u0027)\ngame.addInventoryItem(new Item(\"treasure chest\", \"\", \"It is a treasure chest full of treasure. And really heavy\",\"treasure_chest.txt\"))\n\n"
+        }
+      ],
       "x": 318.0,
       "y": 242.0
     },
@@ -157,8 +186,8 @@
           "script": "if (!game.hasInventoryItems(\"planks\",\"rope\"))\n{\ngame.error(\"It\u0027s a good to fix this bridge. You have a feeling that there are interesting things on the other side. However, you\u0027re going to need some planks and some rope to do that.\")\n}\nelse\n{\ndef link \u003d screen.getLink(\"east\")\nlink.setCanPass(true);\nlink.setDescription(\"To the \u003c\u003e is the bride that you mended\")\ngame.loseItem(\"planks\")\ngame.loseItem(\"rope\")\ngame.error(\"Well that was clever of you. You replace the rotten planks of the bridge with the good ones that you were carrying and the frayed rope with the sturdy rope that you found. It looks strong enough to cross now\")\n}"
         }
       ],
-      "x": 471.0,
-      "y": 428.0
+      "x": 482.0,
+      "y": 513.0
     },
     {
       "title": "Southern tip",
@@ -187,8 +216,8 @@
           "script": "game.goTo(\"Shipwreck\")\ngame.error(\"You dive in the water and swim your heart out\")"
         }
       ],
-      "x": 155.0,
-      "y": 529.0
+      "x": 161.0,
+      "y": 658.0
     },
     {
       "title": "Shipwreck",
@@ -221,8 +250,8 @@
           "script": "game.goTo(\"Southern tip\")\ngame.error(\"You swim to the island\")"
         }
       ],
-      "x": 156.0,
-      "y": 653.0
+      "x": 131.0,
+      "y": 829.0
     },
     {
       "title": "Below deck",
@@ -245,8 +274,8 @@
         }
       ],
       "actions": [],
-      "x": 58.0,
-      "y": 745.0
+      "x": 48.0,
+      "y": 922.0
     },
     {
       "title": "Marshes",
@@ -263,8 +292,8 @@
       ],
       "items": [],
       "actions": [],
-      "x": 302.0,
-      "y": 530.0
+      "x": 274.0,
+      "y": 655.0
     },
     {
       "title": "Bridge east",
@@ -277,12 +306,26 @@
           "description": "The bridge that you mended lies to the \u003c\u003e.",
           "cant_pass_message": "",
           "can_pass": true
+        },
+        {
+          "screen": "Forrest",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Forrest2",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
         }
       ],
       "items": [],
       "actions": [],
-      "x": 598.0,
-      "y": 448.0
+      "x": 595.0,
+      "y": 513.0
     },
     {
       "title": "Little bay",
@@ -502,6 +545,7 @@
     {
       "title": "cave6(Cave)",
       "description": "You have entered a large underground cavern. Emerging from the floor of the cave is and can see an underground spring.",
+      "imageName": "",
       "links": [
         {
           "screen": "cave5(Cave)",
@@ -515,7 +559,8 @@
         {
           "name": "emerald",
           "description": "It is a beautiful gem",
-          "insitu": "Below the surface of the water you see something glimmering in the light of your torch. As you move closer you can see that it is a large \u003c\u003e"
+          "insitu": "Below the surface of the water you see something glimmering in the light of your torch. As you move closer you can see that it is a large \u003c\u003e",
+          "imageName": "emerald.txt"
         }
       ],
       "actions": [],
@@ -739,7 +784,7 @@
     },
     {
       "title": "Eastern cliff",
-      "description": "You are at the top of a cliff on the far eastern edge of the island. The ocean stretches as far as the eye can see.",
+      "description": "You follow the miner\u0027s trail and are at the top of a cliff on the far eastern edge of the island. The ocean stretches as far as the eye can see.",
       "links": [
         {
           "screen": "Mine entrance",
@@ -790,6 +835,119 @@
       ],
       "x": 1221.0,
       "y": 453.0
+    },
+    {
+      "title": "Forrest",
+      "description": "Your are in a thick forrest of tall trees.",
+      "links": [
+        {
+          "screen": "Bridge east",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Large tree",
+          "direction": "south",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 714.0,
+      "y": 514.0
+    },
+    {
+      "title": "Large tree",
+      "description": "Your are in a thick forrest of tall trees. Although all of the trees in the forrest are tall there is a very large tree here.",
+      "links": [
+        {
+          "screen": "Forrest2",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Forrest",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [
+        {
+          "regex": "climb( up)*( the)*( tree)*",
+          "script": "game.goTo(\"Halfway up the tree\")\ngame.error(\"With courage and pure strength you grip the mighty tree with your bare hands and begin to climb upwards\")"
+        }
+      ],
+      "x": 727.0,
+      "y": 646.0
+    },
+    {
+      "title": "Forrest2",
+      "description": "Your are in a thick forrest of tall trees.",
+      "links": [
+        {
+          "screen": "Bridge east",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Large tree",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 589.0,
+      "y": 635.0
+    },
+    {
+      "title": "Halfway up the tree",
+      "description": "You are half way up the tree. It\u0027s a good thing you\u0027re not scared of heights!",
+      "links": [],
+      "items": [],
+      "actions": [
+        {
+          "regex": "climb( up)*( the)*( tree)*",
+          "script": "game.goTo(\"Treehouse\")\ngame.error(\"Up you go even further! That\u0027s interesting there is some sort of structure up above.\")"
+        },
+        {
+          "regex": "climb down( the)*( tree)*",
+          "script": "game.goTo(\"Large tree\")"
+        }
+      ],
+      "x": 838.0,
+      "y": 747.0
+    },
+    {
+      "title": "Treehouse",
+      "description": "You have emerged at a treehouse at the top of the large tree. From this location you can see the whole island. To the north are the hills and cliffs of the eastern side of the island. To the west is the mouth of the river and the shipwreck that you were on. Far in the distance to the north west you can see your pirate ship waiting for your signal.\n\nThe treehouse is large but almost entirely empty. A chest of drawers in the corner is the only piece of furniture.",
+      "links": [],
+      "items": [],
+      "actions": [
+        {
+          "regex": "open (the )*drawer(s)*",
+          "script": "import text_adventure.Item\n\ngame.error(\"You open one of the drawers and see ... nothing. Not to be discouraged you open the second draw and see ... nothing. The third one is probably empty too you think. No point in even checking probably. Oh, what the heck! You open the third draw and find a beautiful blue SAPPHIRE!\")\ngame.addInventoryItem(new Item(\"sapphire\", \"\", \"It is a large blue sapphire\",\"sapphire.txt\"))\n"
+        },
+        {
+          "regex": "climb down( the)*( tree)*",
+          "script": "game.goTo(\"Halfway up the tree\")"
+        }
+      ],
+      "x": 943.0,
+      "y": 752.0
     }
   ],
   "inventory": []
