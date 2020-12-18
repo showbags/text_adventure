@@ -24,6 +24,13 @@
           "description": "",
           "cant_pass_message": "",
           "can_pass": true
+        },
+        {
+          "screen": "Mine entrance",
+          "direction": "up",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
         }
       ],
       "items": [],
@@ -494,7 +501,7 @@
     },
     {
       "title": "cave6(Cave)",
-      "description": "You are still in the cave",
+      "description": "You have entered a large underground cavern. Emerging from the floor of the cave is and can see an underground spring.",
       "links": [
         {
           "screen": "cave5(Cave)",
@@ -504,7 +511,13 @@
           "can_pass": true
         }
       ],
-      "items": [],
+      "items": [
+        {
+          "name": "emerald",
+          "description": "It is a beautiful gem",
+          "insitu": "Below the surface of the water you see something glimmering in the light of your torch. As you move closer you can see that it is a large \u003c\u003e"
+        }
+      ],
       "actions": [],
       "x": 985.0,
       "y": 167.0
@@ -679,12 +692,104 @@
           "description": "",
           "cant_pass_message": "",
           "can_pass": true
+        },
+        {
+          "screen": "Mine entrance",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
         }
       ],
       "items": [],
       "actions": [],
       "x": 987.0,
       "y": 344.0
+    },
+    {
+      "title": "Mine entrance",
+      "description": "You are at what appears to be an abandoned mine camp at the entrance to the cave system. It looks as though the caves were once explored for something precious - perhaps gems?",
+      "links": [
+        {
+          "screen": "cave14(Cave)",
+          "direction": "west",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Eastern cliff",
+          "direction": "east",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [
+        {
+          "name": "pick",
+          "description": "It\u0027s an old rusty pick used by the miners. Looks pretty strong still though.",
+          "insitu": "Amongst some of the things left behind by the miners is an old \u003c\u003e",
+          "imageName": "pick.txt"
+        }
+      ],
+      "actions": [],
+      "x": 1108.0,
+      "y": 348.0
+    },
+    {
+      "title": "Eastern cliff",
+      "description": "You are at the top of a cliff on the far eastern edge of the island. The ocean stretches as far as the eye can see.",
+      "links": [
+        {
+          "screen": "Mine entrance",
+          "direction": "west",
+          "description": "You can head \u003c\u003e towards the hills.",
+          "cant_pass_message": "",
+          "can_pass": true
+        },
+        {
+          "screen": "Rubble pile",
+          "direction": "south",
+          "description": "The miners trail continues to the \u003c\u003e",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [],
+      "x": 1223.0,
+      "y": 346.0
+    },
+    {
+      "title": "Rubble pile",
+      "description": "At the end of the miner\u0027s trail is the place where they used to dump the rubble taken from the mine. You wonder whether all of the precious gems have been removed from this rubble or not ...",
+      "links": [
+        {
+          "screen": "Eastern cliff",
+          "direction": "north",
+          "description": "",
+          "cant_pass_message": "",
+          "can_pass": true
+        }
+      ],
+      "items": [],
+      "actions": [
+        {
+          "regex": "(look|examine)\\s+(at )*(rubble|boulders|boulder|rocks)",
+          "script": "game.error(\"You walk in amongst the large boulders. There are all shapes and sizes. You pick some of the smaller ones and turn them over. Just as you think you\u0027re starting to waste your time you see something reflective from one of the larger rocks. Moving closer you see a bright red RUBY\");"
+        },
+        {
+          "regex": "(?:get|pick up|take) (ruby)",
+          "script": "game.error(\"You try to take the ruby out of the rock but it is stuck hard\")"
+        },
+        {
+          "regex": "(use pick on rock?)|(hit rocks? with pick)",
+          "script": "import text_adventure.Item\n\ngame.error(\"You strike at the rock with the old pick and the ruby comes loose! You pick it up\")\ngame.addInventoryItem(new Item(\"ruby\", \"\", \"It is a large red ruby\",\"ruby.txt\"))\n"
+        }
+      ],
+      "x": 1221.0,
+      "y": 453.0
     }
   ],
   "inventory": []

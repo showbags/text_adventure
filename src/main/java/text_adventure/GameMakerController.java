@@ -513,6 +513,7 @@ public class GameMakerController
             getChildren().add(makeTextField("Name",item.getName()));
             getChildren().add(makeTextField("Description",item.getDescription(),(obs,ov,nv) -> item.setDescription(nv)));
             getChildren().add(makeTextField("In situ",item.getInsitu(),(obs,ov,nv) -> item.setInsitu(nv)));
+            getChildren().add(makeTextField("Image",item.getImageName(),(obs,ov,nv) -> item.setImageName(nv)));
             Button takeButton = new Button("-");
             takeButton.setFont(new Font(8));
             takeButton.setOnAction( evt ->

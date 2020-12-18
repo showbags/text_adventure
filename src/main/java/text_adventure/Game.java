@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -125,6 +124,7 @@ public class Game
         inventory.add(item);
     }
 
+    @SuppressWarnings("unused")
     public void loseItem(String item)
     {
         invalidateInventory();
@@ -136,6 +136,7 @@ public class Game
         return getInventoryMap().containsKey(item);
     }
 
+    @SuppressWarnings("unused")
     public boolean hasInventoryItems(String... items)
     {
         for (String item : items)
@@ -164,6 +165,7 @@ public class Game
         this.currentScreen=screen;
     }
 
+    @SuppressWarnings("unused")
     public void goTo(String screen) { setCurrentScreen(getScreen(screen)); }
 
     public List<Screen> getScreens() { return this.screens; }
@@ -222,6 +224,7 @@ public class Game
         if (input.equals("help"))
         {
             overviewAndHelp();
+            generalHelp();
             return;
         }
         if (spellCheck(input))
@@ -292,7 +295,7 @@ public class Game
         Item item = getInventoryItem(name);
         if (item==null) item = currentScreen.getItem(name);
         if (item!=null)
-            error("\n"+currentScreen.getItem(name).getDescription());
+            item.describe();
         else
             error("There is no "+name+".");
     }
@@ -334,6 +337,29 @@ public class Game
     public static void printlnBold(String string)
     {
         println("\033[0;1m"+string+"\033[0m");
+    }
+
+    public static void displayImage(String imageName)
+    {
+        try
+        {
+            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+            InputStream is = classloader.getResourceAsStream("asciiart/"+imageName);
+            if (is!=null)
+            {
+                BufferedReader reader=new BufferedReader(new InputStreamReader(is));
+                String line;
+                System.out.println("\n\n");
+                while ((line=reader.readLine())!=null)
+                {
+                    System.out.println("      "+line);
+                }
+                System.out.println();
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void generalHelp()
@@ -380,13 +406,19 @@ public class Game
         return false;
     }
 
-    private void error(String error)
+    public void error(String error)
     {
         System.out.print(error);
         hold();
     }
 
-    public void hold()
+    public static void message(String message)
+    {
+        System.out.print(message);
+        hold();
+    }
+
+    public static void hold()
     {
         System.out.print("\n\nPress ENTER");
         System.console().readLine();
@@ -512,7 +544,6 @@ class Screen
 
     private transient Map<String,Item> itemMap;
     private transient Map<String, Link> linkMap;
-    private transient BufferedImage image;
 
     public Screen(String title)
     {
@@ -644,32 +675,13 @@ class Screen
     {
         Game.printlnBold("\n "+title+"\n");
         StringBuilder sb = new StringBuilder();
-        sb.append("  "+description+" ");
+        sb.append("  ").append(description).append(" ");
         for (Item item : items) sb.append(item.describeInSitu()).append(". ");
         for (Link link : links)
             sb.append(link.describe()).append(". ");
         sb.append("\n");
         Game.println(sb.toString());
-
-        try
-        {
-            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            InputStream is = classloader.getResourceAsStream("asciiart/"+imageName);
-            if (is!=null)
-            {
-                BufferedReader reader=new BufferedReader(new InputStreamReader(is));
-                String line;
-                System.out.println("\n\n");
-                while ((line=reader.readLine())!=null)
-                {
-                    System.out.println("      "+line);
-                }
-                System.out.println();
-                reader.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Game.displayImage(imageName);
     }
 
     public boolean handleInput(Game game, String input)
@@ -733,36 +745,6 @@ class Link
         else
             return description.replaceAll("<>",direction);
     }
-}
-
-class Item
-{
-    private String name, description, insitu;
-
-    public Item(String name, String insitu, String description)
-    {
-        this.name=name;
-        this.insitu=insitu;
-        this.description=description;
-    }
-
-    public String getName() { return this.name; }
-
-    public String getInsitu() { return this.insitu;}
-
-    public void setInsitu(String insitu) { this.insitu=insitu; }
-
-    public String describeInSitu(){
-        return insitu.replaceAll("<>","\033[0;1m"+name+"\033[0m");
-    }
-
-    public String toString(){
-        return this.name;
-    }
-
-    public String getDescription(){ return this.description; }
-
-    public void setDescription(String description) { this.description=description; }
 }
 
 class Action
