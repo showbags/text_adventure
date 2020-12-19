@@ -48,7 +48,7 @@
         },
         {
           "regex": "light( the)* fire( with| using)*( the)* flint",
-          "script": "if (game.hasInventoryItem(\"treasure chest\"))\n{\ngame.error(\"I don\u0027t think it\u0027s a good idea to signal to your mates without the treasure chest\")\n}\nelse\n{\ngame.error(\"You light the fire. The ship comes to get you. All good. The end\")\ngame.endGame()\n}\n"
+          "script": "if (!game.hasInventoryItem(\"treasure chest\"))\n{\ngame.error(\"I don\u0027t think it\u0027s a good idea to signal to your mates without the treasure chest\")\n}\nelse\n{\ngame.error(\"You light the fire. The ship comes to get you. All good. The end\")\ngame.endGame()\n}\n"
         }
       ],
       "x": 158.0,
@@ -950,5 +950,6 @@
       "y": 752.0
     }
   ],
-  "inventory": []
+  "inventory": [],
+  "properties": {}
 }
