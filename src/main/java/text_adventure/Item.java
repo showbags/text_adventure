@@ -29,7 +29,7 @@ public class Item
 
     public String describeInSitu()
     {
-        return insitu.replaceAll("<>", "\033[0;1m"+name+"\033[0m");
+        return insitu.replaceAll("<>", "\033[0;1m"+name+"\033[0m").replaceAll("\\.$","");
     }
 
     public void describe()

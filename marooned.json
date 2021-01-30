@@ -14,28 +14,14 @@
         {
           "screen": "Green grove",
           "direction": "east",
-          "description": "",
+          "description": "There is a little path heading \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "South beach",
           "direction": "south",
-          "description": "",
-          "cant_pass_message": "",
-          "can_pass": true
-        },
-        {
-          "screen": "Mine entrance",
-          "direction": "up",
-          "description": "",
-          "cant_pass_message": "",
-          "can_pass": true
-        },
-        {
-          "screen": "Treehouse",
-          "direction": "down",
-          "description": "",
+          "description": "This beach extends to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -48,7 +34,11 @@
         },
         {
           "regex": "light( the)* fire( with| using)*( the)* flint",
-          "script": "if (!game.hasInventoryItem(\"treasure chest\"))\n{\ngame.error(\"I don\u0027t think it\u0027s a good idea to signal to your mates without the treasure chest\")\n}\nelse\n{\ngame.error(\"You light the fire. The ship comes to get you. All good. The end\")\ngame.endGame()\n}\n"
+          "script": "if (!game.hasProperty(\"fire\"))\n{\ngame.error(\"Before you light a fire you need to make a fire\")\n}\nif (!game.hasInventoryItem(\"flint\"))\n{\ngame.error(\"You have no flint with which to light the fire\")\n}\nelse if (!game.hasInventoryItem(\"treasure chest\"))\n{\ngame.error(\"I don\u0027t think it\u0027s a good idea to signal to your mates without the treasure chest\")\n}\nelse\n{\ngame.error(\"By scratching the flint against another small rock on the beach you start making some sparks. The dry firewood you have collected becomes catches on fire. Before long it is a mighty and smoky blaze. You pirate comrades see the signal and come to your rescue. Congratulations!!!\")\ngame.endGame()\n}\n"
+        },
+        {
+          "regex": "(go )*(for )*(a )*(swim|swimming)",
+          "script": "game.error(\"\\\"I\u0027m coming me hearties!!\\\" you yell as you dive into the water. Unfortunately, it is too far to swim and you sink beneath the waves. Next time it might be better if you get them to come to you?\")\ngame.endGame()"
         }
       ],
       "x": 158.0,
@@ -107,14 +97,14 @@
         {
           "screen": "Southern tip",
           "direction": "south",
-          "description": "",
+          "description": "To the \u003c\u003e is the southern tip of the island",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "The beach",
           "direction": "north",
-          "description": "",
+          "description": "The beach continues to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -123,7 +113,7 @@
       "actions": [
         {
           "regex": "(go )*(for )*(a )*(swim|swimming)",
-          "script": "game.error(\"You wade into the beautiful clear water and feel instantly refreshed. As several dorsal fins begin to circle around you it seems that having a quick dip while there was work to be done wasn\u0027t such a good idea. On the up side you have provided a meal to some hungry sharks. On the down side you are unable to complete the game with no arms legs or head.\")\ngame.endGame()"
+          "script": "game.error(\"You wade into the beautiful clear water and feel instantly refreshed. As several dorsal fins begin to circle around you it seems that having a quick dip wasn\u0027t such a good idea. On the up side you have provided a meal to some hungry sharks. On the down side you are unable to complete the game with no arms legs or head.\")\ngame.endGame()"
         }
       ],
       "x": 162.0,
@@ -138,13 +128,13 @@
           "screen": "Bridge west",
           "direction": "east",
           "description": "You notice that on the trail to the \u003c\u003e is rather scary looking bear",
-          "cant_pass_message": "Let\u0027s not go that way",
+          "cant_pass_message": "There is a big scary bear that way. You will have to think of something else.",
           "can_pass": false
         },
         {
           "screen": "Green grove",
           "direction": "north",
-          "description": "",
+          "description": "To the \u003c\u003e is the little clearing",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -197,14 +187,14 @@
         {
           "screen": "Marshes",
           "direction": "east",
-          "description": "",
+          "description": "You can head \u003c\u003e towards some marshy land at the river mouth",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "South beach",
           "direction": "north",
-          "description": "",
+          "description": "The beach continues to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -241,7 +231,7 @@
         {
           "name": "planks",
           "description": "No sign of rot in these planks",
-          "insitu": "Some of the decks broken \u003c\u003e look loose enough to take"
+          "insitu": "Some of the deck\u0027s broken \u003c\u003e look loose enough to take"
         }
       ],
       "actions": [
@@ -285,7 +275,7 @@
         {
           "screen": "Southern tip",
           "direction": "west",
-          "description": "",
+          "description": "The only way to go is back to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -297,7 +287,7 @@
     },
     {
       "title": "Bridge east",
-      "description": "You are now on the eastern side of the river.",
+      "description": "You are now on the eastern side of the river where there is a dense forest.",
       "imageName": "",
       "links": [
         {
@@ -310,14 +300,14 @@
         {
           "screen": "Forrest",
           "direction": "east",
-          "description": "",
+          "description": "You can enter the forest to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "Forrest2",
           "direction": "south",
-          "description": "",
+          "description": "You can enter the forest to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -335,14 +325,14 @@
         {
           "screen": "Green grove",
           "direction": "south",
-          "description": "",
+          "description": "There is a path to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "Rocky trail",
           "direction": "east",
-          "description": "",
+          "description": "A rocky trail leads to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -400,7 +390,7 @@
         {
           "screen": "Rocky trail",
           "direction": "west",
-          "description": "",
+          "description": "There is a rocky trail back to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
@@ -758,14 +748,14 @@
         {
           "screen": "cave14(Cave)",
           "direction": "west",
-          "description": "",
+          "description": "You can go back into the caves to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "Eastern cliff",
           "direction": "east",
-          "description": "",
+          "description": "A trail used by the old miner\u0027s continues to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -776,6 +766,11 @@
           "description": "It\u0027s an old rusty pick used by the miners. Looks pretty strong still though.",
           "insitu": "Amongst some of the things left behind by the miners is an old \u003c\u003e",
           "imageName": "pick.txt"
+        },
+        {
+          "name": "flint",
+          "description": "It could probably be used for all sorts of things including making fires.",
+          "insitu": "Next to the campfire is a piece of \u003c\u003e"
         }
       ],
       "actions": [],
@@ -802,7 +797,12 @@
         }
       ],
       "items": [],
-      "actions": [],
+      "actions": [
+        {
+          "regex": "*.jump.*",
+          "script": "game.error(\u0027\"So long cruel world!\" you cry as you leap off the cliff\u0027)\ngame.endGame()"
+        }
+      ],
       "x": 1223.0,
       "y": 346.0
     },
@@ -813,7 +813,7 @@
         {
           "screen": "Eastern cliff",
           "direction": "north",
-          "description": "",
+          "description": "You can go back along the miner\u0027s trail to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -843,14 +843,14 @@
         {
           "screen": "Bridge east",
           "direction": "west",
-          "description": "",
+          "description": "There is a trailing leading towards the river to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "Large tree",
           "direction": "south",
-          "description": "",
+          "description": "You can go deeper into the forest to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
@@ -896,14 +896,14 @@
         {
           "screen": "Bridge east",
           "direction": "north",
-          "description": "",
+          "description": "The forest clears to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
         {
           "screen": "Large tree",
           "direction": "east",
-          "description": "",
+          "description": "You can go deeper into the forest to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }

@@ -7,6 +7,7 @@ import groovy.lang.GroovyShell;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -248,10 +249,23 @@ public class Game
         {
             return;
         }
-        //fall through to here
-        System.out.println("I don't understand \""+input+"\"");
-        hold();
 
+        handleAll(input); //fall through to here
+    }
+
+    public void handleAll(String input)
+    {
+        int rand = ThreadLocalRandom.current().nextInt(1, 6 + 1);
+        switch (rand)
+        {
+            case 1 -> System.out.println("I don't understand \""+input+"\"");
+            case 2 -> System.out.println("Do you really want to do that now?");
+            case 3 -> System.out.println("Maybe later. There's more important things to do at the moment.");
+            case 4 -> System.out.println("Not now.");
+            case 5 -> System.out.println("Really? Come on.");
+            case 6 -> System.out.println("\""+input+"\" doesn't make any sense to me.");
+        }
+        hold();
     }
 
     public void endGame()
@@ -334,21 +348,40 @@ public class Game
 
     private void gameOverview()
     {
-        System.out.println(gameOverview);
+        println(gameOverview);
     }
 
     public static void println(String string)
     {
         int limit=100;
-        String[] words = string.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words)
+
+        for (String line : string.split("\n"))
         {
-            int ceil = (sb.length()/limit+1)*limit;
-            String ws = sb.length()+word.length()<ceil ? " " : "\n";
-            sb.append(ws).append(word);
+            StringBuilder sb = new StringBuilder();
+            int current_line_length=0;
+            for (String word : line.split(" "))
+            {
+                int len = plength(word);
+                if (current_line_length+len>=limit-1)
+                {
+                    sb.append("\n");
+                    sb.append(word);
+                    sb.append(" ");
+                    current_line_length=2;
+                } else
+                {
+                    sb.append(word);
+                    sb.append(" ");
+                    current_line_length+=len+1;
+                }
+            }
+            System.out.println(sb);
         }
-        System.out.println(sb);
+    }
+
+    private static int plength(String string)
+    {
+        return string.replaceAll("/[^ -~]/g", "").length();
     }
 
     public static void printlnBold(String string)
@@ -425,13 +458,13 @@ public class Game
 
     public void error(String error)
     {
-        System.out.print(error);
+        println(error);
         hold();
     }
 
     public static void message(String message)
     {
-        System.out.print(message);
+        println(message);
         hold();
     }
 
@@ -691,8 +724,8 @@ class Screen
     public void display()
     {
         Game.printlnBold("\n "+title+"\n");
-        StringBuilder sb = new StringBuilder();
-        sb.append("  ").append(description).append(" ");
+        StringBuilder sb = new StringBuilder(description);
+        sb.append(" ");
         for (Item item : items) sb.append(item.describeInSitu()).append(". ");
         for (Link link : links)
             sb.append(link.describe()).append(". ");
@@ -763,7 +796,7 @@ class Link
         if (description.isBlank())
             return "You can go "+direction;
         else
-            return description.replaceAll("<>",direction);
+            return description.replaceAll("<>",direction).replaceAll("\\.$","");
     }
 }
 

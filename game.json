@@ -1,150 +1,150 @@
 {
-  "screens": {
-    "Pantry": {
+  "screens": [
+    {
       "title": "Pantry",
       "description": "You are in the pantry.",
-      "links": {
-        "south": {
+      "links": [
+        {
           "screen": "Kitchen",
           "direction": "south",
           "description": "You can leave the pantry to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
-      },
-      "items": {
-        "bread": {
+      ],
+      "items": [
+        {
           "name": "bread",
           "description": "It is perfect bread for making sandwiches",
           "insitu": "There is some \u003c\u003e in the bread box"
         },
-        "vegemite": {
+        {
           "name": "vegemite",
           "description": "Mmmm. That would be nice on some bread",
           "insitu": "There is a \u003c\u003e on the shelves"
         }
-      },
+      ],
       "actions": [],
       "x": 200.0,
       "y": 100.0
     },
-    "Kitchen": {
+    {
       "title": "Kitchen",
       "description": "You are at kitchen of your home. There is a circular dining table in the center of the room.",
-      "links": {
-        "south": {
+      "links": [
+        {
           "screen": "Laundry",
           "direction": "south",
           "description": "There is a door to the \u003c\u003e",
           "cant_pass_message": "The door is locked",
           "can_pass": false
         },
-        "north": {
+        {
           "screen": "Pantry",
           "direction": "north",
           "description": "There is an open pantry door to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
-        "west": {
+        {
           "screen": "Backyard",
           "direction": "west",
           "description": "The back door leading to the \u003c\u003e is open to the outside",
           "cant_pass_message": "",
           "can_pass": true
         }
-      },
-      "items": {
-        "key": {
+      ],
+      "items": [
+        {
           "name": "key",
           "description": "It\u0027s just a key",
           "insitu": "On the table is a \u003c\u003e"
         }
-      },
+      ],
       "actions": [
         {
           "regex": "unlock door( with)*( the)*( key)*",
-          "script": "if (!game.inventory.containsKey(\"key\"))\ngame.error(\"You don\u0027t have a key\");\nelse\n{\nscreen.getLink(\"south\").setCanPass(true);\ngame.error(\"The door unlocks\");\n}\n"
+          "script": "if (!game.hasInventoryItem(\"key\"))\ngame.error(\"You don\u0027t have a key\");\nelse\n{\nscreen.getLink(\"south\").setCanPass(true);\ngame.error(\"The door unlocks\");\n}\n"
         },
         {
           "regex": "make( a)* sandwich",
-          "script": "if (!game.inventory.containsKey(\"bread\"))\ngame.error(\"You need bread to make a sandwich\");\nelse if (!game.inventory.containsKey(\"vegemite\"))\ngame.error(\"Some vegemite would be nice\");\nelse if (!game.inventory.containsKey(\"knife\"))\ngame.error(\"How are you going to spread the vegemite with no knife?\");\nelse\n{\nSystem.out.println(\"You make a sandwich and win the game!!!!\");\nSystem.out.println(\"\");\nSystem.out.println(\" ------------  CONGRATULATIONS!!!  ------------\");\nSystem.out.println(\"\");\ngame.endGame();\n}\n"
+          "script": "if (!game.hasInventoryItem(\"bread\"))\ngame.error(\"You need bread to make a sandwich\");\nelse if (!game.hasInventoryItem(\"vegemite\"))\ngame.error(\"Some vegemite would be nice\");\nelse if (!game.hasInventoryItem(\"knife\"))\ngame.error(\"How are you going to spread the vegemite with no knife?\");\nelse\n{\nSystem.out.println(\"You make a sandwich and win the game!!!!\");\nSystem.out.println(\"\");\nSystem.out.println(\" ------------  CONGRATULATIONS!!!  ------------\");\nSystem.out.println(\"\");\ngame.endGame();\n}\n"
         }
       ],
       "x": 200.0,
       "y": 200.0
     },
-    "Pool area": {
+    {
       "title": "Pool area",
       "description": "You are in the pool area. There is a lovely clear pool that looks nice for swimming in.",
-      "links": {
-        "north": {
+      "links": [
+        {
           "screen": "Laundry",
           "direction": "north",
           "description": "To the \u003c\u003e is the laundry door",
           "cant_pass_message": "",
           "can_pass": true
         }
-      },
-      "items": {
-        "note": {
+      ],
+      "items": [
+        {
           "name": "note",
           "description": "The note says \"Go to the kitchen and make a sandwich to win the game\"",
           "insitu": "On the ground there is a \u003c\u003e"
         }
-      },
+      ],
       "actions": [],
       "x": 200.0,
       "y": 400.0
     },
-    "Backyard": {
+    {
       "title": "Backyard",
       "description": "You are out the back of your house. On the grass you can see some garden tools.",
-      "links": {
-        "east": {
+      "links": [
+        {
           "screen": "Kitchen",
           "direction": "east",
           "description": "The back door of the house is open to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
-      },
-      "items": {
-        "knife": {
+      ],
+      "items": [
+        {
           "name": "knife",
           "description": "It looks like a pretty good sandwich making knife.",
           "insitu": "Amongst the garden tools you can see a \u003c\u003e"
         }
-      },
+      ],
       "actions": [],
       "x": 100.0,
       "y": 200.0
     },
-    "Laundry": {
+    {
       "title": "Laundry",
       "description": "You are in the laundry of your house.",
-      "links": {
-        "south": {
+      "links": [
+        {
           "screen": "Pool area",
           "direction": "south",
           "description": "There is a door leading outside to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         },
-        "north": {
+        {
           "screen": "Kitchen",
           "direction": "north",
           "description": "There is a door to the \u003c\u003e",
           "cant_pass_message": "",
           "can_pass": true
         }
-      },
-      "items": {},
+      ],
+      "items": [],
       "actions": [],
       "x": 200.0,
       "y": 300.0
     }
-  },
+  ],
   "file": {
     "path": "game.json"
   },
